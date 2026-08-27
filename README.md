@@ -7,9 +7,21 @@ The app itself greets a name that is entered and a notes app.
 Early development.
 
 ## Usage
+
+### Local
 Boot up the server
 
 ```bash
 uvicorn server:app --port 8000
 ```
 Then go to `localhost:8000`
+
+### Docker
+Build the image from the Dockerfile
+```bash
+docker build -t cloud-deployment .                
+```
+Run the image
+```bash
+docker run  --name cloud-deployment-container -p 8000:8000 cloud-deployment
+```
