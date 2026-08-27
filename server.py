@@ -6,3 +6,7 @@ app = FastAPI()
 @app.get("/")
 def main():
     return FileResponse("index.html")
+
+@app.get("/greet/{name}")
+def greet(name: str):
+    return {"message": f"Hello, {name}"}
