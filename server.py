@@ -9,4 +9,4 @@ def main():
 
 @app.get("/greet/{name}")
 def greet(name: str):
-    return {"message": f"Hello, {name}"}
+    return {"message": f"Hello, {name}!"}

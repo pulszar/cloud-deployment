@@ -8,7 +8,18 @@
 <body>
     <h1>Greeter</h1>
     <h2>Who would you like to greet?</h2>
-    <input placeholder="Enter a name">
-    <button>Send</button>
+    <input id="userInput" placeholder="Enter a name">
+    <button onClick="greet()">Send</button>
+    <p id="serverResponse"></p>
+    <script>
+        async function greet() {
+            const userInput = document.getElementById("userInput").value; // Get input
+            console.log(userInput);
+            const result = await fetch(`/greet/${userInput}`); // Send to server, get response
+            console.log(result);
+            const data = await result.json();
+            document.getElementById("serverResponse").textContent = data.message; // Set placeholder element
+        }
+    </script>
 </body>
 </html>
