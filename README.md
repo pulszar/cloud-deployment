@@ -12,7 +12,7 @@ Early development.
 
 Dependencies in `requirements.txt`
 
-## Usage (MacOS Commands)
+## Usage
 
 ### Local
 
@@ -25,7 +25,7 @@ Then go to `localhost:8000`
 
 ### Notes
 
-Create the notes Postgres database
+#### Create Database
 
 ```bash
 brew services start postgres
@@ -33,13 +33,29 @@ createdb notesdb
 psql notesdb
 ```
 
-Create the table
+#### Create Table
 
 ```SQL
 CREATE TABLE notes (
     id SERIAL PRIMARY KEY,
     note TEXT NOT NULL
 );
+```
+
+#### Send a Note
+
+Go to `localhost:8000/docs`,  select the `POST /notes` endpoint, and fill in the value for `message`.
+
+You can also make the following `curl` request:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/notes' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "message": "Your note"
+}'
 ```
 
 
