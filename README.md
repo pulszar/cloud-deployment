@@ -8,14 +8,18 @@ Early development.
 
 ## Prerequisites
 
-### Local
+### Local - Non-Docker
 
 Dependencies in `requirements.txt` and Postgres for creating the database and table
 
+### Local - Docker
+
+Docker
+
 ## Usage
 
-### Docker (preferred)
-#### Dockerized FastAPI and Non-Dockerized Postgres DB
+### Local - Docker (Preferred if **not willing** to install dependencies)
+#### Dockerized FastAPI and Non-Dockerized Postgres DB (Preferred)
 
 1. In `server.py`, comment out all `database_uri` except for **#2**
 
@@ -40,28 +44,14 @@ docker run  --name cloud-deployment-container -p 8000:8000 cloud-deployment
 ```bash
 docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" postgres:17
 ```
-*Include the `-v postgres_vol:/var/lib/postgres/data` tag if you don't want data loss after destroying the container*
+*Include the `-v postgres_vol:/var/lib/postgresql/data` tag if you don't want data loss after destroying the container*
 
-### Local
-
-1. Boot up the server
-
+3. Enter the containers instance of Postgres to configure it
 ```bash
-uvicorn server:app --port 8000
-```
-2. Go to `localhost:8000`
-
-### Notes Database and Table Configuration
-
-#### Create Database
-
-```bash
-brew services start postgres
-createdb notesdb
-psql notesdb
+docker exec -it deployment-postgres psql -U postgres -d notesdb
 ```
 
-#### Create Table
+4. Create table
 
 ```SQL
 CREATE TABLE notes (
@@ -70,7 +60,46 @@ CREATE TABLE notes (
 );
 ```
 
-#### Send a Note
+5. Boot up the server
+
+```bash
+uvicorn server:app --port 8000
+```
+6. Go to `localhost:8000`
+
+### Local - Non-Docker (Preferred if **willing** to install dependencies)
+
+1. In `server.py`, comment out all `database_uri` except for **#1**
+
+2. Change the user in the `database_uri` from `luke` to the username of your machine
+
+3. Boot up the server
+
+```bash
+uvicorn server:app --port 8000
+```
+4. Go to `localhost:8000`
+
+#### Notes Database and Table Configuration
+
+1. Create database
+
+```bash
+brew services start postgres
+createdb notesdb
+psql notesdb
+```
+
+2. Create table
+
+```SQL
+CREATE TABLE notes (
+    id SERIAL PRIMARY KEY,
+    note TEXT NOT NULL
+);
+```
+
+3. Send a note
 
 Go to `localhost:8000/docs`,  select the `POST /notes` endpoint, and fill in the value for `message`.
 
