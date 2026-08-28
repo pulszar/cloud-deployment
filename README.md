@@ -60,6 +60,7 @@ curl -X 'POST' \
 
 
 ### Docker (preferred)
+#### Dockerized FastAPI and Non-Dockerized Postgres DB
 Build the image from the Dockerfile
 ```bash
 docker build -t cloud-deployment .                

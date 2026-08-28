@@ -6,11 +6,17 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-database_uri = "postgres://luke@localhost:5432/notesdb"
+# Non-dockerized FastAPI and non-dockerized Postgres
+# database_uri = "postgres://luke@localhost:5432/notesdb"
+
+# Dockerized FastAPI and non-dockerized Postgres
+# Uses special host name that acts as the host's IP
+database_uri = "postgres://luke@host.docker.internal:5432/notesdb"
 
 class Note(BaseModel): # Note schema
     message : str
 
+# Serve frontend
 @app.get("/")
 def main():
     return FileResponse("index.html")
