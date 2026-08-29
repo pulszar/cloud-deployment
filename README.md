@@ -18,7 +18,7 @@ Docker
 
 ## Usage
 
-### Local - Docker (Preferred if **not willing** to install dependencies)
+### Local - Docker (Preferred)
 
 #### Docker Compose (Preferred)
 
@@ -48,8 +48,6 @@ CREATE TABLE notes (
     note TEXT NOT NULL
 );
 ```
-
-Send a note:
 
 5. Send a note
 
@@ -115,7 +113,7 @@ uvicorn server:app --port 8000
 ```
 6. Go to `localhost:8000`
 
-### Local - Non-Docker (Preferred if **willing** to install dependencies)
+### Local - Non-Docker
 
 1. In `server.py`, comment out all `database_uri` except for **#1**
 
