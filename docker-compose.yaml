@@ -1,6 +1,18 @@
 services:
   server:
     build: .
+    environment:
+      - DATABASE_URI=postgres://postgres:password@db:5432/notesdb
     ports: 
       - 8000:8000
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=notesdb
+    volumes:
+      - postgres_vol:/var/lib/postgresql/data
+
+volumes:
+  postgres_vol:
     
