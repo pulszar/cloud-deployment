@@ -4,6 +4,8 @@ from fastapi.responses import FileResponse # To serve frontend file
 import psycopg # Postgres database adapter
 from pydantic import BaseModel
 
+import os
+
 app = FastAPI()
 
 # 1. Non-dockerized FastAPI and non-dockerized Postgres
@@ -15,7 +17,11 @@ app = FastAPI()
 
 # 3. Non-dockerized FastAPI and dockerized Postgres
 # Uses special host name that acts as the host's IP
-database_uri = "postgres://postgres:password@localhost:5432/notesdb"
+# database_uri = "postgres://postgres:password@localhost:5432/notesdb"
+
+# 4. Fully dockerized (Docker compose)
+# Uses the URI created within the compose yaml
+database_uri = os.environ['DATABASE_URI']
 
 class Note(BaseModel): # Note schema
     message : str

@@ -19,7 +19,55 @@ Docker
 ## Usage
 
 ### Local - Docker (Preferred if **not willing** to install dependencies)
-#### Dockerized FastAPI and Non-Dockerized Postgres DB (Preferred)
+
+#### Docker Compose (Preferred)
+
+1. Compose the containers
+
+```bash
+docker compose up
+```
+
+Greeter is available at `localhost:8000`
+
+2. Figure out what the container id is for Postgres
+```bash
+docker ps
+```
+
+3. Enter the containers instance of Postgres to configure it
+```bash
+docker exec -it {Postgres Container ID} psql -U postgres -d notesdb
+```
+
+4. Create table
+
+```SQL
+CREATE TABLE notes (
+    id SERIAL PRIMARY KEY,
+    note TEXT NOT NULL
+);
+```
+
+Send a note:
+
+5. Send a note
+
+Go to `localhost:8000/docs`,  select the `POST /notes` endpoint, and fill in the value for `message`.
+
+You can also make the following `curl` request:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/notes' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "message": "Your note"
+}'
+```
+
+#### Dockerized FastAPI and Non-Dockerized Postgres DB
 
 1. In `server.py`, comment out all `database_uri` except for **#2**
 
