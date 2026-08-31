@@ -52,3 +52,9 @@ variable "nsg_security_rule_name" {
     type = string
 }
 
+variable "vm_name" {
+    default = "vm-deploy-tst-01"
+    description = "Filter traffic into app subnet"
+    type = string
+}
+

@@ -82,3 +82,36 @@ resource "azurerm_subnet_network_security_group_association" "subnet_nsg_asoc" {
     subnet_id = azurerm_subnet.app_subnet.id
     network_security_group_id = azurerm_network_security_group.nsg.id
 }
+
+# Finally create the VM
+resource "azurerm_linux_virtual_machine" "vm" {
+    name = var.vm_name
+    location = var.location
+    resource_group_name = var.rg_name
+    admin_username = "azureadmin"
+
+    # Configure SSH access
+    admin_ssh_key {
+        username = "azureadmin"
+        # Must have a key pair named "cloud_vm"
+        public_key = file("~/.ssh/cloud_vm.pub")
+    }
+
+    # Cheapest general purpose Ubuntu VM
+    size = "Standard_D2als_v7"
+
+    os_disk {
+        caching = "ReadWrite"
+        storage_account_type = "StandardSSD_LRS"
+    }
+
+    network_interface_ids = [ azurerm_network_interface.nic.id ]
+
+    # Choose image
+    source_image_reference {
+        publisher = "Canonical"
+        offer = "ubuntu-25_04"
+        sku = "server"
+        version = "latest"
+    }
+}
