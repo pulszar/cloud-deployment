@@ -23,6 +23,7 @@ resource "azurerm_virtual_network" "vnet" {
     resource_group_name = var.rg_name
 
     address_space = ["10.0.0.0/16"]
+    depends_on = [ azurerm_resource_group.rg ]
 }
 
 # Create subnet to hold the VM
@@ -30,7 +31,7 @@ resource "azurerm_subnet" "app_subnet" {
     name = var.subnet_app_name
     resource_group_name = var.rg_name
 
-    virtual_network_name = var.virtual_network_name
+    virtual_network_name = azurerm_virtual_network.vnet.name
     address_prefixes = ["10.0.0.0/24"]
 }
 
@@ -41,6 +42,8 @@ resource "azurerm_public_ip" "public_ip" {
 
     sku = "Standard"
     allocation_method = "Static"
+
+    depends_on = [ azurerm_resource_group.rg ]
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -51,7 +54,8 @@ resource "azurerm_network_interface" "nic" {
     ip_configuration {
         name = var.nic_ip_config_name
         public_ip_address_id = azurerm_public_ip.public_ip.id
-        private_ip_address_allocation = "Static"
+        private_ip_address_allocation = "Dynamic"
+        subnet_id = azurerm_subnet.app_subnet.id
     }
 }
 
@@ -75,6 +79,8 @@ resource "azurerm_network_security_group" "nsg" {
         # TODO: Change to just http once web server is setup
         destination_port_ranges = ["22", "80"]
     }
+
+    depends_on = [ azurerm_resource_group.rg ]
 }
 
 # Associate subnet and NSG
