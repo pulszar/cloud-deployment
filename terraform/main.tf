@@ -26,7 +26,7 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 # Create subnet to hold the VM
-resource "azurerm_subnet" "vm" {
+resource "azurerm_subnet" "app_subnet" {
     name = var.subnet_app_name
     resource_group_name = var.rg_name
 
@@ -53,4 +53,32 @@ resource "azurerm_network_interface" "nic" {
         public_ip_address_id = azurerm_public_ip.public_ip.id
         private_ip_address_allocation = "Static"
     }
+}
+
+resource "azurerm_network_security_group" "nsg" {
+    name = var.nsg_name
+    location = var.location
+    resource_group_name = var.rg_name
+
+    security_rule {
+        name = var.nsg_security_rule_name
+        direction = "Inbound"
+        priority = 100
+        protocol = "Tcp"
+        access = "Allow"
+        
+        source_address_prefix = "*"
+        source_port_range = "*"
+
+        destination_address_prefix = "*"
+        # Only allow ssh and http.
+        # TODO: Change to just http once web server is setup
+        destination_port_ranges = ["22", "80"]
+    }
+}
+
+# Associate subnet and NSG
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg_asoc" {
+    subnet_id = azurerm_subnet.app_subnet.id
+    network_security_group_id = azurerm_network_security_group.nsg.id
 }

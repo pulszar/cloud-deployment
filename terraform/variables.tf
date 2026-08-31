@@ -40,3 +40,15 @@ variable "nic_ip_config_name" {
     type = string
 }
 
+variable "nsg_name" {
+    default = "nsg-deploy"
+    description = "Filter traffic into app subnet"
+    type = string
+}
+
+variable "nsg_security_rule_name" {
+    default = "nsg-sr-name"
+    description = "Filter traffic into app subnet"
+    type = string
+}
+
