@@ -3,3 +3,22 @@
 packages:
   - nginx
   - docker.io
+
+runcmd:
+  - printf "user www-data;\n
+    worker_processes auto;\n
+    worker_cpu_affinity auto;\n
+    pid /run/nginx.pid;\n
+    error_log /var/log/nginx/error.log;\n
+    include /etc/nginx/modules-enabled/*.conf;\n
+    events {\n
+            \tworker_connections 768;\n
+    }\n
+    http {\n
+            \tserver {\n
+                    \t\tlisten 80;\n
+                    \t\tlocation / {\n
+                            \t\t\tproxy_pass http://localhost:8000;\n
+                    \t\t}\n
+            \t}\n
+    }" > /etc/nginx/nginx.conf
