@@ -120,4 +120,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
         sku = "server"
         version = "latest"
     }
+
+    # Cloud-init
+    user_data = base64encode(file("./cloud_config.yaml"))
 }
