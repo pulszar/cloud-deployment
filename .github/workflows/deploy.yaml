@@ -3,7 +3,7 @@ name: Deploy app to server
 on:
   push:
     branches:
-      - main
+      - feature/actions
 
 jobs:
   deploy:
