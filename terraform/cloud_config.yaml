@@ -33,3 +33,4 @@ runcmd:
   - sudo nginx -s reload
   - sudo git clone https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
   - sudo docker compose -f /opt/cloud-deployment/docker-compose.yaml up
+  - sudo git config --global --add safe.directory /opt/cloud-deployment
