@@ -1,0 +1,12 @@
+name: Deploy app to server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+  runs-on: ubuntu-latest
+    - name: test from runner
+      run: echo "Hello from runner"
