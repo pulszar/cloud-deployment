@@ -3,11 +3,29 @@ name: Deploy app to server
 on:
   push:
     branches:
-      - feature/actions
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: test from runner
-        run: echo "Hello from runner"
+      - name: Install Ansible
+        run: sudo apt install ansible
+
+      - name: Checkout current repo
+        uses: actions/checkout@v7
+
+      - name: Put secret inventory file into inventory.ini
+        shell: bash
+        env:
+          inventory_secret: ${{ secrets.INVENTORY }}
+        run: echo "$inventory_secret" > inventory.ini
+
+      - name: Retrieve and give runner SSH key
+        shell: bash
+        env:
+          ssh_secret: ${{ secrets.CLOUD_VM_PRIVATE_SSH_KEY }}
+        run: echo "$ssh_secret" > cloud_vm.pem
+
+      - name: Run Ansible playbook
+        run: sudo ansible-playbook -i inventory.ini --key-file "./cloud_vm.pem" playbook.yaml

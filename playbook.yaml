@@ -1,0 +1,14 @@
+- name: Test playbook
+  become: true
+  hosts: myhosts
+  tasks:
+    - name: Pull repo for new changes
+      ansible.builtin.shell:
+        cmd: git -C /opt/cloud-deployment pull
+      become: true
+
+    - name: Build the app with the new changes
+      community.docker.docker_compose_v2:
+        project_src: /opt/cloud-deployment
+        build: always
+        recreate: always
