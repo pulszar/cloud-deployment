@@ -51,7 +51,9 @@ def get_notes():
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM notes")
             return cursor.fetchall()
-        
+
+# Creates main notes table
+# Intended to only be used when there doesn't exist a table
 @app.post("/initiate")
 def initiate_notes():
     with psycopg.connect(database_uri) as connection:
