@@ -4,19 +4,57 @@ A simple FastAPI + Postgres web app deployed on an Azure VM via Terraform and Do
 
 The app itself greets a name that is entered and a notes app.
 
-Early development.
-
 ## Prerequisites
 
-### Local - Non-Docker
+### Deploying on an Azure VM via Terraform
 
-Dependencies in `requirements.txt` and Postgres for creating the database and table
+1. Terraform
 
-### Local - Docker
+1. Authentication between Terraform and Azure
 
-Docker
+Follow Microsoft's guide to [Authenticate Terraform to Azure](https://learn.microsoft.com/en-us/azure/developer/terraform/authenticate-to-azure?tabs=bash)
+
+
+### Locally without Docker
+
+1. Python 3
+
+1. Packages within `requirements.txt`
+
+Install with `pip install -r requirements.txt`
+
+### Locally with Docker
+
+1. Docker
 
 ## Usage
+
+Clone the repo
+```bash
+git clone https://github.com/pulszar/cloud-deployment.git
+```
+
+### Azure VM
+
+1. Change to `/terraform` directory
+
+1. Initialize Terraform
+```bash
+terraform init
+```
+1. Plan and review what resources will be spun up
+```
+terraform plan
+```
+1. Spin up resources
+```bash
+terraform apply
+```
+1. The public IP will output once finished. The app will be available at that IP.
+1. Destroy the resources once done with the app
+```bash
+terraform destroy
+```
 
 ### Local - Docker (Preferred)
 
