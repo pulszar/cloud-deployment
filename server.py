@@ -25,6 +25,9 @@ database_uri = os.environ['DATABASE_URI']
 
 class Note(BaseModel): # Note schema
     message : str
+    
+class TableName(BaseModel): # Note schema
+    table_name : str
 
 # Serve frontend
 @app.get("/")
@@ -41,3 +44,17 @@ def send_note(note : Note):
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO notes (note) VALUES (%s) RETURNING id", (note.message,))
             return cursor.fetchone()
+        
+@app.get("/notes")
+def get_notes():
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM notes")
+            return cursor.fetchall()
+        
+@app.post("/initiate")
+def initiate_notes():
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)")
+            return {"table_status": "created"}
