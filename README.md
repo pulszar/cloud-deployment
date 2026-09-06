@@ -38,20 +38,20 @@ git clone https://github.com/pulszar/cloud-deployment.git
 
 1. Change to `/terraform` directory
 
-1. Initialize Terraform
+2. Initialize Terraform
 ```bash
 terraform init
 ```
-1. Plan and review what resources will be spun up
+3. Plan and review what resources will be spun up
 ```
 terraform plan
 ```
-1. Spin up resources
+4. Spin up resources
 ```bash
 terraform apply
 ```
-1. The public IP will output once finished. The app will be available at that IP.
-1. Destroy the resources once done with the app
+5. The public IP will output once finished. The app will be available at that IP.
+6. Destroy the resources once done with the app
 ```bash
 terraform destroy
 ```
@@ -66,42 +66,7 @@ terraform destroy
 docker compose up
 ```
 
-Greeter is available at `localhost:8000`
-
-2. Figure out what the container id is for Postgres
-```bash
-docker ps
-```
-
-3. Enter the containers instance of Postgres to configure it
-```bash
-docker exec -it {Postgres Container ID} psql -U postgres -d notesdb
-```
-
-4. Create table
-
-```SQL
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    note TEXT NOT NULL
-);
-```
-
-5. Send a note
-
-Go to `localhost:8000/docs`,  select the `POST /notes` endpoint, and fill in the value for `message`.
-
-You can also make the following `curl` request:
-
-```bash
-curl -X 'POST' \
-  'http://localhost:8000/notes' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "message": "Your note"
-}'
-```
+Greeter and notes app will be available at `localhost:8000`
 
 #### Dockerized FastAPI and Non-Dockerized Postgres DB
 
@@ -118,8 +83,6 @@ docker build -t cloud-deployment .
 docker run  --name cloud-deployment-container -p 8000:8000 cloud-deployment
 ```
 
-5. Configure the database by following [Notes Database and Table Configuration](#notes-database-and-table-configuration)
-
 #### Non-Dockerized FastAPI and Dockerized Postgres DB
 
 1. In `server.py`, comment out all `database_uri` except for **#3**
@@ -129,27 +92,6 @@ docker run  --name cloud-deployment-container -p 8000:8000 cloud-deployment
 docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" postgres:17
 ```
 *Include the `-v postgres_vol:/var/lib/postgresql/data` tag if you don't want data loss after destroying the container*
-
-3. Enter the containers instance of Postgres to configure it
-```bash
-docker exec -it deployment-postgres psql -U postgres -d notesdb
-```
-
-4. Create table
-
-```SQL
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    note TEXT NOT NULL
-);
-```
-
-5. Boot up the server
-
-```bash
-uvicorn server:app --port 8000
-```
-6. Go to `localhost:8000`
 
 ### Local - Non-Docker
 
@@ -162,42 +104,7 @@ uvicorn server:app --port 8000
 ```bash
 uvicorn server:app --port 8000
 ```
-4. Go to `localhost:8000`
-
-#### Notes Database and Table Configuration
-
-1. Create database
-
-```bash
-brew services start postgres
-createdb notesdb
-psql notesdb
-```
-
-2. Create table
-
-```SQL
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    note TEXT NOT NULL
-);
-```
-
-3. Send a note
-
-Go to `localhost:8000/docs`,  select the `POST /notes` endpoint, and fill in the value for `message`.
-
-You can also make the following `curl` request:
-
-```bash
-curl -X 'POST' \
-  'http://localhost:8000/notes' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "message": "Your note"
-}'
-```
+Greeter and notes app will be available at `localhost:8000`
 
 
 
