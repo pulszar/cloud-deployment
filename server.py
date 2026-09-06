@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse # To serve frontend file
+from fastapi.staticfiles import StaticFiles
 
 import psycopg # Postgres database adapter
 from pydantic import BaseModel
@@ -29,10 +30,13 @@ class Note(BaseModel): # Note schema
 class TableName(BaseModel): # Note schema
     table_name : str
 
+app.frontend("/", directory="./frontend")
+
 # Serve frontend
-@app.get("/")
-def main():
-    return FileResponse("index.html")
+# @app.get("/")
+# def main():
+#     return FileResponse("/app/frontend/index.html")
+
 
 @app.get("/greet/{name}")
 def greet(name: str):

@@ -5,6 +5,13 @@ services:
       - DATABASE_URI=postgres://postgres:password@db:5432/notesdb
     ports: 
       - 8000:8000
+    develop:
+      watch:
+        - action: sync+restart
+          path: .
+          target: /app
+        - action: rebuild
+          path: requirements.txt
   db:
     image: postgres:17
     environment:
