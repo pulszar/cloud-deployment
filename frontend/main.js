@@ -1,8 +1,14 @@
 async function greet() {
-    const userInput = document.getElementById("userInput").value; // Get input
-    console.log(userInput);
-    const result = await fetch(`/greet/${userInput}`); // Send to server, get response
-    console.log(result);
+    const greetUserInput = document.getElementById("greetUserInput").value; // Get input
+    const result = await fetch(`/greet/${greetUserInput}`); // Send to server, get response
     const data = await result.json();
-    document.getElementById("serverResponse").textContent = data.message; // Set placeholder element
+    document.getElementById("greetServerResponse").textContent = data.message; // Set placeholder element
+}
+
+async function initializeDb() {
+    const result = await fetch(`/initiate`, {
+        method: "POST"
+    });
+    const data = await result.json();
+    document.getElementById("dbInitializeServerResponse").textContent = data.message; // Set placeholder element
 }

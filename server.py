@@ -32,12 +32,6 @@ class TableName(BaseModel): # Note schema
 
 app.frontend("/", directory="./frontend")
 
-# Serve frontend
-# @app.get("/")
-# def main():
-#     return FileResponse("/app/frontend/index.html")
-
-
 @app.get("/greet/{name}")
 def greet(name: str):
     return {"message": f"Hello, {name}!"}
