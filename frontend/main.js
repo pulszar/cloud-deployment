@@ -6,9 +6,18 @@ async function greet() {
 }
 
 async function initializeDb() {
-    const result = await fetch(`/initiate`, {
+    await fetch(`/initiate`, {
         method: "POST"
     });
-    const data = await result.json();
-    document.getElementById("dbInitializeServerResponse").textContent = data.message; // Set placeholder element
+}
+
+async function sendToNotesTable() {
+    const userNote = document.getElementById("userNote").value;
+    await fetch("/notes", {
+        method: "POST",
+        body: JSON.stringify({message: userNote}),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
 }

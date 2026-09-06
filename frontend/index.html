@@ -12,9 +12,18 @@
     <button onClick="greet()">Send</button>
     <p id="greetServerResponse"></p>
 
+    <h1>Notes</h1>
+
     <h2>Initialize the notes DB</h2>
     <button onClick="initializeDb()">Initialize DB</button>
     <p id="dbInitializeServerResponse"></p>
+
+    <h2>Look at the data in the database</h2>
+    <button onClick="window.open('/notes')" >See whats in notes table</button>
+
+    <h2>Send a note to the database</h2>
+    <input placeholder="Enter your note here" id="userNote">
+    <button onClick="sendToNotesTable()">Send</button>
 
     <script src="main.js"></script>
 </body>
