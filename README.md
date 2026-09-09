@@ -4,6 +4,46 @@ A simple FastAPI + Postgres web app deployed on an Azure VM via Terraform and Do
 
 The app itself greets a name that is entered and a notes app.
 
+## Diagram
+
+```mermaid
+    swimlane-beta TB
+        subgraph App
+            Docker[Docker]
+            db[(PostgresSQL DB)]
+            FastAPI[FastAPI Web Server]
+        end
+
+        subgraph CD
+            GitHub[GitHub Actions]
+            cd_event[Push to main]
+            Ansible[Ansible]
+        end
+
+        subgraph Cloud
+            tf[Terraform]
+            public_ip[Public IP]
+            vnet[VNet]
+            subnet[Subnet]
+            nic[Network Interface]
+            nsg[Network Security Group]
+            vm[Ubuntu VM]
+        end
+
+        Docker --> FastAPI
+        Docker --> db
+
+        GitHub --> cd_event
+        cd_event --> Ansible
+
+        tf --> vnet
+        vnet --> subnet
+        subnet --> nsg
+        nsg --> nic
+        public_ip --> nic
+        nic --> vm
+```
+
 ## Prerequisites
 
 ### Deploying on an Azure VM via Terraform
