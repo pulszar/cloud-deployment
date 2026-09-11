@@ -4,7 +4,7 @@ A simple FastAPI + Postgres web app deployed on an Azure VM via Terraform and Do
 
 The app itself greets a name that is entered and a notes app.
 
-## Diagram
+## Architecture
 
 ```mermaid
     swimlane-beta TB
@@ -18,6 +18,8 @@ The app itself greets a name that is entered and a notes app.
             GitHub[GitHub Actions]
             cd_event[Push to main]
             Ansible[Ansible]
+            pull[Repository Pull]
+            compose[Docker Compose]
         end
 
         subgraph Cloud
@@ -28,6 +30,10 @@ The app itself greets a name that is entered and a notes app.
             nic[Network Interface]
             nsg[Network Security Group]
             vm[Ubuntu VM]
+
+            init[Cloud init]
+            nginx_bs[Boostrap Nginx]
+            docker_bs[Boostrap Docker]
         end
 
         Docker --> FastAPI
@@ -35,13 +41,19 @@ The app itself greets a name that is entered and a notes app.
 
         GitHub --> cd_event
         cd_event --> Ansible
+        Ansible -->|In VM|pull
+        pull --> compose
 
-        tf --> vnet
+        tf -->|Creates| vnet
         vnet --> subnet
         subnet --> nsg
         nsg --> nic
-        public_ip --> nic
+        nic --> public_ip
         nic --> vm
+
+        vm --> init
+        init --> nginx_bs
+        init --> docker_bs
 ```
 
 ## Prerequisites
