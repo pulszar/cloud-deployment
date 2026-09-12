@@ -21,3 +21,17 @@ async function sendToNotesTable() {
         }
     })
 }
+
+async function getGroceryList() {
+    const response = await fetch("/notes");
+    const data = await response.json();
+
+    // Fill in HTML table with 2d loop
+    const groceryList = document.querySelector('table');
+    for (let r = 0; r < data.length; r++) {
+        let row = groceryList.insertRow()
+        for (c = 0;c < 1; c++) {
+            row.insertCell().textContent = `${data[r][1]}`
+        }
+    }
+}

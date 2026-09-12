@@ -26,7 +26,6 @@ database_uri = os.environ['DATABASE_URI']
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    
     # Initialize database with notes table
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
@@ -39,12 +38,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 # app = FastAPI()
 
-
 class Note(BaseModel): # Note schema
     message : str
-    
-class TableName(BaseModel): # Note schema
-    table_name : str
 
 app.frontend("/", directory="./frontend")
 
@@ -57,7 +52,7 @@ def send_note(note : Note):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO notes (note) VALUES (%s) RETURNING id", (note.message,))
-            return cursor.fetchone()
+            # return cursor.fetchone()
         
 @app.get("/notes")
 def get_notes():
