@@ -48,5 +48,11 @@ async function getGroceryList() {
 
         col2.appendChild(deleteButton);
 
+        // Create purchse button
+        var purchaseButton = document.createElement('button');
+        purchaseButton.textContent = "Purchase";
+        purchaseButton.setAttribute("onClick", `purchaseListId(${itemId})`);
+
+        col2.appendChild(purchaseButton);
     }
 }

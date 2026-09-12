@@ -40,6 +40,9 @@ app = FastAPI(lifespan=lifespan)
 
 class Note(BaseModel): # Note schema
     message : str
+    
+class Id(BaseModel):
+    id : int
 
 app.frontend("/", directory="./frontend")
 
@@ -60,3 +63,9 @@ def get_notes():
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM notes")
             return cursor.fetchall()
+        
+@app.delete("/grocerylist")
+def del_list(id_to_delete : Id):
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM notes WHERE (%(int)s)=id", {'int': id_to_delete.id})
