@@ -26,13 +26,16 @@ async function getGroceryList() {
     const response = await fetch("/notes");
     const data = await response.json();
 
-    // Fill in HTML table with 2d loop
-    const groceryList = document.querySelector('table');
+    // Delete all rows first for refreshing purposes
+    $('#groceryList tbody').empty();
+    // Fill in HTML table with 2d loop  
     for (let r = 0; r < data.length; r++) {
         const itemId = data[r][0]
         const itemName = data[r][1]
         
-        let row = groceryList.insertRow()
+        const groceryListTbodyRef = document.getElementById('groceryList').getElementsByTagName('tbody')[0];
+
+        let row = groceryListTbodyRef.insertRow()
         row.id = itemId
         
         // Insert grocery item
