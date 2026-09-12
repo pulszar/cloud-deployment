@@ -29,9 +29,24 @@ async function getGroceryList() {
     // Fill in HTML table with 2d loop
     const groceryList = document.querySelector('table');
     for (let r = 0; r < data.length; r++) {
+        const itemId = data[r][0]
+        const itemName = data[r][1]
+        
         let row = groceryList.insertRow()
-        for (c = 0;c < 1; c++) {
-            row.insertCell().textContent = `${data[r][1]}`
-        }
+        row.id = itemId
+        
+        // Insert grocery item
+        row.insertCell().textContent = `${itemName}`;
+
+        var col2 = row.insertCell();
+
+        // Create delete button
+        var deleteButton = document.createElement('button');
+        deleteButton.textContent = "Delete";
+        // Using setAttribute to set onClick because .onclick was doing the function upon button creation
+        deleteButton.setAttribute("onClick", `deleteListId(${itemId})`);
+
+        col2.appendChild(deleteButton);
+
     }
 }
