@@ -62,3 +62,14 @@ async function getGroceryList() {
         col2.appendChild(purchaseButton);
     }
 }
+
+async function deleteListId(id) {
+    await fetch("/grocerylist", {
+        method: "DELETE",
+        body: JSON.stringify({"id": `${id}`}),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    });
+    getGroceryList();
+}
