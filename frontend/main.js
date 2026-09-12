@@ -1,3 +1,5 @@
+getGroceryList()
+
 async function greet() {
     const greetUserInput = document.getElementById("greetUserInput").value; // Get input
     const result = await fetch(`/greet/${greetUserInput}`); // Send to server, get response
@@ -20,6 +22,7 @@ async function sendToNotesTable() {
             "Content-type": "application/json; charset=UTF-8"
         }
     })
+    getGroceryList()
 }
 
 async function getGroceryList() {
