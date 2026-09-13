@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse # To serve frontend file
 from fastapi.staticfiles import StaticFiles
 
+import statistics
+import datetime
 
 import psycopg # Postgres database adapter
 from pydantic import BaseModel
@@ -33,7 +35,7 @@ async def lifespan(app: FastAPI):
                 # Main grocery list
                 cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
                 # Purchase list used to create recommendations
-                cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL PRIMARY KEY, date_purchased TIMESTAMP)")
+                cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL, date_purchased TIMESTAMP)")
             except Exception:
                 pass
     yield # Specify what to do on shutdown after yield
@@ -87,3 +89,36 @@ def read_purchases():
             cursor.execute("SELECT * FROM purchases")
             return cursor.fetchall()
         
+@app.get("/recommendations")
+def get_recommendations():
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            # Get all unique purchases
+            cursor.execute("SELECT DISTINCT on (item) item from purchases")
+            unique = cursor.fetchall()
+            
+            for item in unique:
+                current_item = item[0]
+                # Get all the times this item was purchased
+                cursor.execute("SELECT * FROM purchases WHERE item=(%s)", (current_item,))
+                all_purchases_for_item = cursor.fetchall()
+                
+                # For this item, get all purchase gaps
+                gaps_between_purchases = []
+                for p in range(len(all_purchases_for_item)):
+                    if p + 1 >= len(all_purchases_for_item): # If on last item, don't try and calculate a new range
+                        break
+                    
+                    purchase_gap = all_purchases_for_item[p + 1][1] - all_purchases_for_item[p][1]
+                    gaps_between_purchases.append(purchase_gap.total_seconds()) # Purchase timestamp
+                    
+                # Core recommendation logic
+                # If the time since last purchase is longer than usual, recommend the item
+                seconds_since_last_purchase = (datetime.datetime.now() - all_purchases_for_item[p][-1]).total_seconds()
+                average_seconds_between_purchases = statistics.mean(gaps_between_purchases)
+                
+                if seconds_since_last_purchase > average_seconds_between_purchases:
+                    return "Recommend this item"
+                else:
+                    return "Dont recommend"
+                # return average_seconds_between_purchases
