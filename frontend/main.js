@@ -44,19 +44,33 @@ async function getGroceryList() {
         // Create purchse button
         var purchaseButton = document.createElement('button');
         purchaseButton.textContent = "Purchase";
-        purchaseButton.setAttribute("onClick", `purchaseListId(${itemId})`);
+        purchaseButton.setAttribute("onClick", `purchaseListId('${itemName}', ${itemId});`);
 
         col2.appendChild(purchaseButton);
     }
 }
 
 async function deleteListId(id) {
-    await fetch("/grocerylist", {
-        method: "DELETE",
-        body: JSON.stringify({"id": `${id}`}),
+    await fetch(`/grocerylist/${id}`, {
+        method: "DELETE"
+    });
+    getGroceryList();
+}
+
+async function purchaseListId(itemName, itemId) {
+    const date_purchased = new Date().toISOString();
+    const body = {
+        "item": itemName,
+        "date_purchased": date_purchased
+    };
+
+    await fetch("/purchase", {
+        method: "POST",
+        body: JSON.stringify(body),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
     });
-    getGroceryList();
+
+    deleteListId(itemId);
 }
