@@ -1,8 +1,8 @@
 # Cloud Deployment
 
-A simple FastAPI + Postgres web app deployed on an Azure VM via Terraform and Docker.
+A FastAPI + Postgres web app deployed on an Azure VM via Terraform and Docker.
 
-The app itself greets a name that is entered and a notes app.
+The app itself is a grocery list app with the ability to add and delete items.
 
 ## Architecture
 
@@ -159,4 +159,10 @@ uvicorn server:app --port 8000
 Greeter and notes app will be available at `localhost:8000`
 
 
+## Todo
 
+- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
+
+- Implement purchase functionality
+
+- Implement recommendation functionality

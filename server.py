@@ -30,7 +30,10 @@ async def lifespan(app: FastAPI):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             try:
-                cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)")
+                # Main grocery list
+                cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
+                # Purchase list used to create recommendations
+                cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL PRIMARY KEY, timestamp TIMESTAMP)")
             except Exception:
                 pass
     yield # Specify what to do on shutdown after yield
