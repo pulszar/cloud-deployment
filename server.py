@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
                 # Main grocery list
                 cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
                 # Purchase list used to create recommendations
-                cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL PRIMARY KEY, timestamp TIMESTAMP)")
+                cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL PRIMARY KEY, date_purchased TIMESTAMP)")
             except Exception:
                 pass
     yield # Specify what to do on shutdown after yield
@@ -44,14 +44,11 @@ app = FastAPI(lifespan=lifespan)
 class Note(BaseModel): # Note schema
     message : str
     
-class Id(BaseModel):
-    id : int
+class Purchase(BaseModel):
+    item : str
+    date_purchased : str
 
 app.frontend("/", directory="./frontend")
-
-@app.get("/greet/{name}")
-def greet(name: str):
-    return {"message": f"Hello, {name}!"}
 
 @app.post("/notes")
 def send_note(note : Note):
@@ -67,8 +64,26 @@ def get_notes():
             cursor.execute("SELECT * FROM notes")
             return cursor.fetchall()
         
-@app.delete("/grocerylist")
-def del_list(id_to_delete : Id):
+@app.delete("/grocerylist/{id}")
+def delete_grocery_list_item(id : int):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM notes WHERE (%(int)s)=id", {'int': id_to_delete.id})
+            cursor.execute("DELETE FROM notes WHERE (%(int)s)=id", {'int': id})
+            
+@app.post("/purchase")
+def purchse_item(purchase : Purchase):
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                           INSERT INTO purchases (item, date_purchased) 
+                           VALUES (%s, %s);
+                           """, 
+                           (purchase.item, purchase.date_purchased))
+
+@app.get("/purchase")
+def read_purchases():
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM purchases")
+            return cursor.fetchall()
+        

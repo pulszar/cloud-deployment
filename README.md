@@ -161,8 +161,12 @@ Greeter and notes app will be available at `localhost:8000`
 
 ## Todo
 
-- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
-
 - Implement purchase functionality
 
+- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
+
 - Implement recommendation functionality
+
+- Make app centered in HTML
+
+- Implement at least one test
