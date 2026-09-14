@@ -2,7 +2,7 @@
 
 A FastAPI + Postgres web app deployed on an Azure VM via Terraform and Docker.
 
-The app itself is a grocery list app with the ability to add and delete items.
+The app itself is a smart grocery list app with the feature of recommending items based on item purchase frequency.
 
 ## Architecture
 
