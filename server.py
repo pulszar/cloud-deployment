@@ -97,10 +97,12 @@ def get_recommendations():
             cursor.execute("SELECT DISTINCT on (item) item from purchases")
             unique = cursor.fetchall()
             
+            recommendations = {}
+            
             for item in unique:
-                current_item = item[0]
+                current_item_name = item[0]
                 # Get all the times this item was purchased
-                cursor.execute("SELECT * FROM purchases WHERE item=(%s)", (current_item,))
+                cursor.execute("SELECT * FROM purchases WHERE item=(%s)", (current_item_name,))
                 all_purchases_for_item = cursor.fetchall()
                 
                 # For this item, get all purchase gaps
@@ -118,7 +120,11 @@ def get_recommendations():
                 average_seconds_between_purchases = statistics.mean(gaps_between_purchases)
                 
                 if seconds_since_last_purchase > average_seconds_between_purchases:
-                    return "Recommend this item"
-                else:
-                    return "Dont recommend"
+                    attributes = {}
+                    
+                    attributes["last_purchased"] = all_purchases_for_item[p][-1]
+                    attributes["average_seconds_between_purchases"] = average_seconds_between_purchases
+                    recommendations[current_item_name] = attributes
+                    
+            return recommendations
                 # return average_seconds_between_purchases
