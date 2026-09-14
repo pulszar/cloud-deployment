@@ -1,5 +1,7 @@
 getGroceryList()
 
+getRecommendations()
+
 async function sendToNotesTable() {
     const userNote = document.getElementById("userNote").value;
     await fetch("/notes", {
@@ -73,4 +75,24 @@ async function purchaseListId(itemName, itemId) {
     });
 
     deleteListId(itemId);
+}
+
+async function getRecommendations() {
+    const response = await fetch("/recommendations");
+    const data = await response.json();
+
+    console.log(data);
+    console.log(data.length);
+
+    for (let r = 0; r < data.length; r++) {
+        console.log(data[r]);
+        const itemRecommendation = data[r].recommendation
+        
+        const recommendationListTbodyRef = document.getElementById('recommendationList').getElementsByTagName('tbody')[0];
+
+        let row = recommendationListTbodyRef.insertRow()
+        
+        // Insert recommendation item
+        row.insertCell().textContent = `${itemRecommendation}`;
+    }
 }

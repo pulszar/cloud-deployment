@@ -98,7 +98,7 @@ def get_recommendations():
             cursor.execute("SELECT DISTINCT on (item) item from purchases")
             unique = cursor.fetchall()
             
-            recommendations = {}
+            recommendations = []
             
             for item in unique:
                 current_item_name = item[0]
@@ -127,9 +127,9 @@ def get_recommendations():
                 if seconds_since_last_purchase > average_seconds_between_purchases:
                     attributes = {}
                     
+                    attributes["recommendation"] = current_item_name
                     attributes["last_purchased"] = all_purchases_for_item[p][-1]
                     attributes["average_seconds_between_purchases"] = average_seconds_between_purchases
-                    recommendations[current_item_name] = attributes
+                    recommendations.append(attributes)
                     
             return recommendations
-                # return average_seconds_between_purchases
