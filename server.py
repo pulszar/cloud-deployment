@@ -4,7 +4,8 @@ from fastapi.responses import FileResponse # To serve frontend file
 from fastapi.staticfiles import StaticFiles
 
 import statistics
-import datetime
+from datetime import datetime, timezone
+
 
 import psycopg # Postgres database adapter
 from pydantic import BaseModel
@@ -113,10 +114,14 @@ def get_recommendations():
                     
                     purchase_gap = all_purchases_for_item[p + 1][1] - all_purchases_for_item[p][1]
                     gaps_between_purchases.append(purchase_gap.total_seconds()) # Purchase timestamp
-                    
+                
                 # Core recommendation logic
                 # If the time since last purchase is longer than usual, recommend the item
-                seconds_since_last_purchase = (datetime.datetime.now() - all_purchases_for_item[p][-1]).total_seconds()
+                
+                current_time_utc = datetime.now(timezone.utc)
+                last_time_purchased_utc = all_purchases_for_item[p][-1].replace(tzinfo=timezone.utc)
+                
+                seconds_since_last_purchase = (current_time_utc - last_time_purchased_utc).total_seconds()
                 average_seconds_between_purchases = statistics.mean(gaps_between_purchases)
                 
                 if seconds_since_last_purchase > average_seconds_between_purchases:
