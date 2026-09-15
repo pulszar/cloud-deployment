@@ -5,43 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>Smart Grocery List</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-<style>
-table, th, td {
-    border:1px solid black;
-}
-</style>
-<body>
+<body style="font-family: sans-serif">
     <h1>Smart Grocery List</h1>
-    <h2>Add an item to the list</h2>
-    <input placeholder="Item" id="userNote">
-    <button onClick="sendToNotesTableUserInput()">Send</button>
-
-    <table style="width:50%" id="groceryList">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Options</th>
-            </tr>
-        </thead>
-        <!-- Placeholder tbody for dynamic js -->
-        <tbody> </tbody> 
-    </table>
-
-    <h2>Recommendations</h2>
-
-    <table style="width:50%" id="recommendationList">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Last Purchased</th>
-                <th>Purchase Frequency</th>
-                <th>Options</th>
-            </tr>
-        </thead>
-        <!-- Placeholder tbody for dynamic js -->
-        <tbody> </tbody> 
-    </table>
+    <div class="main">
+        <h2>Add an item to the list</h2>
+        <input placeholder="Item" id="userNote">
+        <button onClick="sendToNotesTableUserInput()">Add to List</button>
+    
+        <table style="width:50%" id="groceryList">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Options</th>
+                </tr>
+            </thead>
+            <!-- Placeholder tbody for dynamic js -->
+            <tbody> </tbody> 
+        </table>
+    
+        <h2>Recommendations</h2>
+    
+        <table style="width:50%" id="recommendationList">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Last Purchased</th>
+                    <th>Average Purchase Frequency</th>
+                    <th>Options</th>
+                </tr>
+            </thead>
+            <!-- Placeholder tbody for dynamic js -->
+            <tbody> </tbody> 
+        </table>
+    </div>
 
     <script src="main.js"></script>
 </body>

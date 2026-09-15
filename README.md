@@ -161,9 +161,9 @@ App will be available at `localhost:8000`
 
 ## Todo
 
-- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
+- Clear recommendations table every time before building it
 
-- Make app centered in HTML
+- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
 
 - Implement at least one test
 

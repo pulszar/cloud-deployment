@@ -110,10 +110,17 @@ async function getRecommendations() {
         row.insertCell().textContent = `${itemRecommendation}`;
         row.insertCell().textContent = `${dateObjLastPurchasedLocalTime.toLocaleString()}`;
 
-        var d = (Number(secondsBetweenPurchases) / (3600*24)).toFixed(2);
-        var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
+        var d = Math.floor(secondsBetweenPurchases / (3600*24));
+        var h = Math.floor(secondsBetweenPurchases % (3600*24) / 3600);
+        var m = Math.floor(secondsBetweenPurchases % 3600 / 60);
 
-        row.insertCell().textContent = `${dDisplay}`;
+        var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+        var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+        var mDisplay = m > 0 ? m + (m == 1 ? " minute " : " minutes ") : "";
+
+        timeDisplay = dDisplay + hDisplay + mDisplay;
+
+        row.insertCell().textContent = `Every ${timeDisplay}`;
 
         var addCol = row.insertCell();
         var addButton = document.createElement("Button");

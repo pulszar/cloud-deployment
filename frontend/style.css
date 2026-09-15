@@ -1,0 +1,11 @@
+table, th, td {
+    border:1px solid black;
+}
+
+.main {
+    text-align: center;
+}
+
+table { 
+    margin: 0px auto; 
+}
