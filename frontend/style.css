@@ -30,13 +30,13 @@ th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #04AA6D;
+  background-color: #5f77ff;
   color: white;
 }
 
 button {
   background-color: white;
-  border: none;
+  border: 2px solid #5f77ff;
   color: black;
   padding: 16px 32px;
   text-align: center;
@@ -46,12 +46,11 @@ button {
   margin: 4px 2px;
   transition-duration: 0.4s;
   cursor: pointer;
+  border-radius: 8px;
 }
 
-button {border: 2px solid #04AA6D;}
-
 button:hover {
-  background-color: #04AA6D;
+  background-color: #5f77ff;
   color: white;
 }
 
