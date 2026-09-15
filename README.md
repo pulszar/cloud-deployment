@@ -118,7 +118,7 @@ terraform destroy
 docker compose up
 ```
 
-Greeter and notes app will be available at `localhost:8000`
+App will be available at `localhost:8000`
 
 #### Dockerized FastAPI and Non-Dockerized Postgres DB
 
@@ -156,7 +156,7 @@ docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=passwor
 ```bash
 uvicorn server:app --port 8000
 ```
-Greeter and notes app will be available at `localhost:8000`
+App will be available at `localhost:8000`
 
 
 ## Todo
