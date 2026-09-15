@@ -87,6 +87,15 @@ async function getRecommendations() {
     for (let r = 0; r < data.length; r++) {
         console.log(data[r]);
         const itemRecommendation = data[r].recommendation
+
+        // Convert to local time
+        var lastPurchased = new Date(data[r].last_purchased).toLocaleString() + " UTC";
+        var lastPurchasedLocalTime = new Date(lastPurchased).toString();
+        var dateObjLastPurchasedLocalTime = new Date(lastPurchasedLocalTime);
+
+        const secondsBetweenPurchases = data[r].average_seconds_between_purchases
+
+        lastPurchased = lastPurchased.toString(); 
         
         const recommendationListTbodyRef = document.getElementById('recommendationList').getElementsByTagName('tbody')[0];
 
@@ -94,5 +103,11 @@ async function getRecommendations() {
         
         // Insert recommendation item
         row.insertCell().textContent = `${itemRecommendation}`;
+        row.insertCell().textContent = `${dateObjLastPurchasedLocalTime.toLocaleString()}`;
+
+        var d = (Number(secondsBetweenPurchases) / (3600*24)).toFixed(2);
+        var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
+
+        row.insertCell().textContent = `${dDisplay}`;
     }
 }

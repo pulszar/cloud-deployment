@@ -161,10 +161,12 @@ Greeter and notes app will be available at `localhost:8000`
 
 ## Todo
 
-- Add "Last Purchased", "Purchase Frequency", and an "Add" option/feature to recommendation section
+- "Add" option/feature to recommendation section
 
 - Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
 
 - Make app centered in HTML
 
 - Implement at least one test
+
+- Add authentication
