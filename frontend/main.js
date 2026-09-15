@@ -2,16 +2,21 @@ getGroceryList()
 
 getRecommendations()
 
-async function sendToNotesTable() {
-    const userNote = document.getElementById("userNote").value;
+// TODO: Integrate these two functions together
+async function sendToList(item) {
     await fetch("/notes", {
         method: "POST",
-        body: JSON.stringify({message: userNote}),
+        body: JSON.stringify({message: item}),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
     })
-    getGroceryList()
+    getGroceryList();
+}
+
+async function sendToNotesTableUserInput() {
+    const userNote = document.getElementById("userNote").value;
+    sendToList(userNote);
 }
 
 async function getGroceryList() {
@@ -109,5 +114,12 @@ async function getRecommendations() {
         var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
 
         row.insertCell().textContent = `${dDisplay}`;
+
+        var addCol = row.insertCell();
+        var addButton = document.createElement("Button");
+        addButton.innerHTML = "Add to List";
+        addButton.setAttribute("onclick", `sendToList('${itemRecommendation}')`)
+
+        addCol.appendChild(addButton);
     }
 }
