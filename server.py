@@ -106,10 +106,15 @@ def get_recommendations():
                 cursor.execute("SELECT * FROM purchases WHERE item=(%s)", (current_item_name,))
                 all_purchases_for_item = cursor.fetchall()
                 
+                # There must be at least 2 purchases of a product to make a recommendation. Skip if less than 2
+                if len(all_purchases_for_item) < 2:
+                    continue
+                
                 # For this item, get all purchase gaps
                 gaps_between_purchases = []
                 for p in range(len(all_purchases_for_item)):
-                    if p + 1 >= len(all_purchases_for_item): # If on last item, don't try and calculate a new range
+                     # If on last item, don't try and calculate a new range
+                    if p + 1 >= len(all_purchases_for_item):
                         break
                     
                     purchase_gap = all_purchases_for_item[p + 1][1] - all_purchases_for_item[p][1]
