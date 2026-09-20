@@ -1,7 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.responses import FileResponse # To serve frontend file
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import OAuth2PasswordRequestForm
+
+# AUTH
+from typing import Annotated
 
 import statistics
 from datetime import datetime, timezone
@@ -33,6 +37,8 @@ async def lifespan(app: FastAPI):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             try:
+                # User table
+                cursor.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username TEXT NOT NULL, hashed_password TEXT NOT NULL, disabled boolean)") 
                 # Main grocery list
                 cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
                 # Purchase list used to create recommendations
@@ -50,6 +56,12 @@ class Note(BaseModel): # Note schema
 class Purchase(BaseModel):
     item : str
     date_purchased : str
+    
+# AUTH
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 app.frontend("/", directory="./frontend")
 
@@ -138,3 +150,15 @@ def get_recommendations():
                     recommendations.append(attributes)
                     
             return recommendations
+        
+# AUTHENTICATION #
+
+# def get_user(username : str):
+    
+
+# def authenticate_user(username: str, password: str):
+#     user = get_user(username)
+
+# @app.post('/token')
+# async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+#     user = authenticate_user(login_form.username, login_form.password)
