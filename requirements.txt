@@ -1,3 +1,7 @@
 uvicorn
 fastapi
 psycopg[binary]
+pwdlib[argon2]
+python-multipart
+pyjwt
+python-dotenv

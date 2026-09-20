@@ -1,14 +1,19 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import FileResponse # To serve frontend file
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordRequestForm
+from dotenv import load_dotenv
+
+load_dotenv(override=False)
 
 # AUTH
 from typing import Annotated
+from pwdlib import PasswordHash
+import jwt
 
 import statistics
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 import psycopg # Postgres database adapter
@@ -38,7 +43,7 @@ async def lifespan(app: FastAPI):
         with connection.cursor() as cursor:
             try:
                 # User table
-                cursor.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username TEXT NOT NULL, hashed_password TEXT NOT NULL, disabled boolean)") 
+                cursor.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username TEXT NOT NULL, email TEXT NOT NULL, hashed_password TEXT NOT NULL, disabled boolean)") 
                 # Main grocery list
                 cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
                 # Purchase list used to create recommendations
@@ -62,6 +67,15 @@ class Purchase(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    
+class User(BaseModel):
+    user_id: int
+    username: str
+    email: str
+    disabled: str | None = None
+    
+class UserInDB(User):
+    hashed_password: str
 
 app.frontend("/", directory="./frontend")
 
@@ -153,12 +167,64 @@ def get_recommendations():
         
 # AUTHENTICATION #
 
-# def get_user(username : str):
+password_hash = PasswordHash.recommended()
+
+DUMMY_HASH = password_hash.hash('dummypassword')
+
+TOKEN_EXPIRE_INTERVAL_MINUTES = 30
+
+SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+ALGORITHM = "HS256"
+
+def get_user(username : str) -> UserInDB:
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE username=(%s)", (username,))
+            
+            user_result = cursor.fetchone()
+            if len(user_result) > 0:
+                return UserInDB(
+                    user_id=user_result[0],
+                    username=user_result[1],
+                    email=user_result[2],
+                    hashed_password=user_result[3],
+                    disabled=user_result[4]
+                )
+                
+def verify_password(password: str, password_hash: str):
+    return password_hash.verify(password, password_hash)
+
+def authenticate_user(username: str, password: str):
+    user = get_user(username)
+    if not user:
+        verify_password(password, DUMMY_HASH)
+        return False
+    if verify_password(password, user.hashed_password):
+        return user
+    
+def get_access_token(data: dict, token_expire_interval: timedelta):
+    to_encode = data.copy()
+    if token_expire_interval:
+        exp = datetime.now(timezone.utc) + token_expire_interval
+    else:
+        exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.get(exp)
+    token = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
+    return token
     
 
-# def authenticate_user(username: str, password: str):
-#     user = get_user(username)
-
-# @app.post('/token')
-# async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
-#     user = authenticate_user(login_form.username, login_form.password)
+@app.post('/token')
+async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+    user = authenticate_user(login_form.username, login_form.password)
+    if not user:
+        raise HTTPException (
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    token_expire_interval = timedelta(minutes=TOKEN_EXPIRE_INTERVAL_MINUTES)
+    token = get_access_token( 
+                data={ "sub": user.username, "id": user.user_id }, 
+                token_expire_interval=token_expire_interval
+            )
+    
