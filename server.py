@@ -42,54 +42,40 @@ password_hash = PasswordHash.recommended()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database with notes table
-    admin_hashed_password = password_hash.hash(os.environ['ADMIN_PASSWORD'])
-    
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             # Create tables
-            try:
-                # User table
+            cursor.execute("SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name=%s)", ('users',))
+            if not cursor.fetchone()[0]:
                 cursor.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username TEXT NOT NULL, email TEXT NOT NULL, hashed_password TEXT NOT NULL, disabled boolean)") 
+            
+            def find_admin_in_db():
+                cursor.execute("SELECT username FROM users WHERE username=(%s)", (os.environ['ADMIN_USERNAME'],))
+                result = cursor.fetchone()
+                if result == None:
+                    return False
+                return True
+
+            def create_admin_in_db():
+                admin_hashed_password = password_hash.hash(os.environ['ADMIN_PASSWORD'])
                 cursor.execute("""
-                            INSERT INTO users (username, email, hashed_password, disabled)
-                            VALUES (%s, %s, %s, %s);
-                            """, (os.environ['ADMIN_USERNAME'], os.environ['ADMIN_EMAIL'], admin_hashed_password, False)
-                            )
-            except Exception:
-                pass
+                    INSERT INTO users (username, email, hashed_password, disabled)
+                    VALUES (%s, %s, %s, %s);
+                    """, (os.environ['ADMIN_USERNAME'], os.environ['ADMIN_EMAIL'], admin_hashed_password, False)
+                    )
+            # print(find_admin_in_db())
+            if not find_admin_in_db():
+                create_admin_in_db()
             
-            try: 
-                # Main grocery list
+            # Main grocery list
+            cursor.execute("SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name=%s)", ('notes',))
+            if not cursor.fetchone()[0]:
                 cursor.execute("CREATE TABLE notes ( id SERIAL PRIMARY KEY, note TEXT NOT NULL)") 
-            except Exception:
-                pass
             
-            try:
-                # Purchase list used to create recommendations
+            # Purchase list used to create recommendations
+            cursor.execute("SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name=%s)", ('purchases',))
+            if not cursor.fetchone()[0]:
                 cursor.execute("CREATE TABLE purchases ( item TEXT NOT NULL, date_purchased TIMESTAMP)")
-            except Exception:
-                pass
-            
-    # with psycopg.connect(database_uri) as connection:
-    #     with connection.cursor() as cursor:
-    #         cursor.execute("SELECT username FROM users WHERE username=(%s)", (os.environ['ADMIN_USERNAME'],))
-    #         result = cursor.fetchone()
-    #         if result == None:
-    #             admin_found = False
-    #         admin_found = True
-            
-    # if not admin_found:
-    #     hashed_password = password_hash.hash(os.environ['ADMIN_PASSWORD'])
-    #     with psycopg.connect(database_uri) as connection:
-    #         with connection.cursor() as cursor:
-    #             cursor.execute("""
-    #                         INSERT INTO users (username, email, disabled, hashed_password)
-    #                         VALUES (%s, %s, %s, %s);
-    #                         """, ('test', 
-    #                                 'test', 
-    #                                 'test', 
-    #                                 'test',)
-    #                         )
         
     yield # Specify what to do on shutdown after yield
 
@@ -120,6 +106,7 @@ class UserInDB(User):
     
 class TokenData(BaseModel):
     username : str
+    id : int
 
 app.frontend("/", directory="./frontend")
 
@@ -221,17 +208,21 @@ ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_scheme)]) -> User:
-    decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     credentials_exception = HTTPException (
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid credentials",
         headers={"WWW-Authenticate": "Bearer"}
     )
     try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = decoded_token.get("sub")
-        user = get_user(username)
+        if username is None:
+            raise credentials_exception
+        user_id = decoded_token.get("id")
+        token_data = TokenData(username=username, id=user_id)
     except InvalidTokenError:
         raise credentials_exception
+    user = get_user(token_data.username)
     if not user:
         raise credentials_exception
     return user
@@ -239,7 +230,7 @@ def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_schem
 def get_current_active_user(current_active_user: Annotated[User, Depends(get_current_user)]) -> User:
     if current_active_user.disabled:
         raise HTTPException (
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Account disabled"
         )
     return current_active_user
