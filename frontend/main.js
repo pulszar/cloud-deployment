@@ -65,15 +65,25 @@ async function register() {
 // TODO: Integrate these two functions together
 async function sendToList(item) {
     var bearer = 'Bearer ' + localStorage.getItem('access_token')
-    await fetch("/notes", {
-        method: "POST",
-        body: JSON.stringify({message: item}),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "Authorization": bearer
+    try {
+        const response = await fetch("/notes", {
+            method: "POST",
+            body: JSON.stringify({message: item}),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8",
+                "Authorization": bearer,
+            }
+        })
+        if (!response.ok) {
+            window.alert("Error occured. You must be logged into create items");
+            throw new Error(`HTTP error: ${response.status}`);
         }
-    })
-    getGroceryList();
+
+        getGroceryList();
+    } catch(e) {
+        console.error(e);
+        return null;
+    }
 }
 
 async function sendToNotesTableUserInput() {
@@ -118,7 +128,7 @@ async function getGroceryList() {
         // Create purchse button
         var purchaseButton = document.createElement('button');
         purchaseButton.textContent = "Purchase";
-        purchaseButton.setAttribute("onClick", `purchaseListId('${itemName}', ${itemId});`);
+        purchaseButton.setAttribute("onClick", `purchaseListId(\`${itemName}\`, ${itemId});`);
 
         col2.appendChild(purchaseButton);
     }
