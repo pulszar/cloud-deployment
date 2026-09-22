@@ -207,13 +207,16 @@ async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> 
 async def create_user(body : CreateUser):
     hashed_password = password_hash.hash(body.password)
     # Insert into database
-    with psycopg.connect(database_uri) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                           INSERT INTO users (username, hashed_password, email, disabled)
-                           VALUES (%s, %s, %s, %s)
-                           """, (body.username, hashed_password, body.email, False))
-    return {"message": "User successfully registered"}
+    if not get_user(body.username):
+        with psycopg.connect(database_uri) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                            INSERT INTO users (username, hashed_password, email, disabled)
+                            VALUES (%s, %s, %s, %s)
+                            """, (body.username, hashed_password, body.email, False))
+        return {"message": "User successfully registered"}
+    else:
+        return {"message": "User already exists"}
         
   
 @app.get('/users/me')  
