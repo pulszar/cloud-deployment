@@ -1,6 +1,42 @@
+var bearer = 'Bearer ' + localStorage.getItem('access_token')
+
 getGroceryList()
 
 getRecommendations()
+
+async function login() {
+    username = document.getElementById("username").value;
+    password = document.getElementById("password").value;
+
+    console.log(username)
+    console.log(password)
+
+    const formData = new URLSearchParams();
+
+    formData.append('username', username);
+    formData.append('password', password);
+
+    try {
+        const response = await fetch ('/token', {
+            method: "POST",
+            body: formData,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.json()
+        window.localStorage.setItem('access_token', data.access_token);
+        getGroceryList();
+    } catch(e) {
+        console.error(e);
+        return null;
+    }
+}
 
 // TODO: Integrate these two functions together
 async function sendToList(item) {
@@ -8,7 +44,8 @@ async function sendToList(item) {
         method: "POST",
         body: JSON.stringify({message: item}),
         headers: {
-            "Content-type": "application/json; charset=UTF-8"
+            "Content-type": "application/json; charset=UTF-8",
+            "Authorization": bearer
         }
     })
     getGroceryList();
