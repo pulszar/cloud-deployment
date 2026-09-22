@@ -2,7 +2,7 @@
 
 A FastAPI + Postgres web app deployed on an Azure VM via Terraform and Docker.
 
-The app itself is a smart grocery list app with the feature of recommending items based on item purchase frequency.
+The app itself is a smart shopping list app with the feature of recommending items based on item purchase frequency.
 
 ## Architecture
 
@@ -11,6 +11,7 @@ The app itself is a smart grocery list app with the feature of recommending item
         subgraph App
             Docker[Docker]
             db[(PostgresSQL DB)]
+            auth[Authentication]
             FastAPI[FastAPI Web Server]
         end
 
@@ -36,8 +37,9 @@ The app itself is a smart grocery list app with the feature of recommending item
             docker_bs[Boostrap Docker]
         end
 
-        Docker --> FastAPI
-        Docker --> db
+        Docker --> auth
+        auth --> FastAPI
+        auth --> db
 
         GitHub --> cd_event
         cd_event --> Ansible
@@ -161,10 +163,8 @@ App will be available at `localhost:8000`
 
 ## Todo
 
-- Clear recommendations table every time before building it
+- Rename all occurrences of the `notes` db or table to `shoppinglist`/`list`
 
-- Rename all occurrences of the `notes` db or table to `grocerylist`/`list`
+- Rename all occurrences of grocery to shopping
 
 - Implement at least one test
-
-- Add authentication
