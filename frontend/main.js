@@ -35,6 +35,33 @@ async function login() {
     }
 }
 
+async function register() {
+    username = document.getElementById("regUsername").value;
+    email = document.getElementById("regEmail").value;
+    password = document.getElementById("regPassword").value;
+
+    try {
+        const response = await fetch ('/create_user', {
+            method: "POST",
+            body: JSON.stringify({
+                "username": username,
+                "email":  email,
+                "password": password
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+    } catch(e) {
+        console.error(e);
+        return null;
+    }
+}
+
 // TODO: Integrate these two functions together
 async function sendToList(item) {
     var bearer = 'Bearer ' + localStorage.getItem('access_token')

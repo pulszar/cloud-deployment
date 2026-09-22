@@ -106,6 +106,11 @@ class UserInDB(User):
 class TokenData(BaseModel):
     username : str
     id : int
+    
+class CreateUser(BaseModel):
+    username: str
+    email: str
+    password: str
 
 DUMMY_HASH = password_hash.hash('dummypassword')
 
@@ -197,6 +202,19 @@ async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> 
                 token_expire_interval=token_expire_interval
             )
     return Token(access_token=token, token_type="bearer")
+
+@app.post('/create_user')
+async def create_user(body : CreateUser):
+    hashed_password = password_hash.hash(body.password)
+    # Insert into database
+    with psycopg.connect(database_uri) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                           INSERT INTO users (username, hashed_password, email, disabled)
+                           VALUES (%s, %s, %s, %s)
+                           """, (body.username, hashed_password, body.email, False))
+    return {"message": "User successfully registered"}
+        
   
 @app.get('/users/me')  
 def get_current_user_api(current_user: Annotated[User, Depends(get_current_active_user)]) -> User:
