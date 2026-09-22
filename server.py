@@ -214,41 +214,41 @@ def send_note(current_user: Annotated[User, Depends(get_current_active_user)], n
             cursor.execute("INSERT INTO notes (note, user_id) VALUES (%s, %s) RETURNING id", (note.message, current_user.user_id))
         
 @app.get("/notes")
-def get_notes():
+def get_notes(current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM notes")
+            cursor.execute("SELECT id, note FROM notes WHERE user_id=(%s)", (current_user.user_id,))
             return cursor.fetchall()
         
 @app.delete("/grocerylist/{id}")
-def delete_grocery_list_item(id : int):
+def delete_grocery_list_item(id : int, current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM notes WHERE (%(int)s)=id", {'int': id})
+            cursor.execute("DELETE FROM notes WHERE id=(%s) AND user_id=(%s)", (id, current_user.user_id))
             
 @app.post("/purchase")
-def purchse_item(purchase : Purchase):
+def purchse_item(purchase : Purchase, current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
-                           INSERT INTO purchases (item, date_purchased) 
-                           VALUES (%s, %s);
+                           INSERT INTO purchases (item, date_purchased, user_id) 
+                           VALUES (%s, %s, %s)
                            """, 
-                           (purchase.item, purchase.date_purchased))
+                           (purchase.item, purchase.date_purchased, current_user.user_id,))
 
 @app.get("/purchase")
-def read_purchases():
+def read_purchases(current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM purchases")
+            cursor.execute("SELECT * FROM purchases WHERE user_id=(%s)", (current_user.user_id,))
             return cursor.fetchall()
         
 @app.get("/recommendations")
-def get_recommendations():
+def get_recommendations(current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             # Get all unique purchases
-            cursor.execute("SELECT DISTINCT on (item) item from purchases")
+            cursor.execute("SELECT DISTINCT on (item) item from purchases WHERE user_id=(%s)", (current_user.user_id,))
             unique = cursor.fetchall()
             
             recommendations = []
@@ -256,7 +256,7 @@ def get_recommendations():
             for item in unique:
                 current_item_name = item[0]
                 # Get all the times this item was purchased
-                cursor.execute("SELECT * FROM purchases WHERE item=(%s)", (current_item_name,))
+                cursor.execute("SELECT * FROM purchases WHERE item=(%s) AND user_id=(%s)", (current_item_name, current_user.user_id,))
                 all_purchases_for_item = cursor.fetchall()
                 
                 # There must be at least 2 purchases of a product to make a recommendation. Skip if less than 2
@@ -270,7 +270,7 @@ def get_recommendations():
                     if p + 1 >= len(all_purchases_for_item):
                         break
                     
-                    purchase_gap = all_purchases_for_item[p + 1][1] - all_purchases_for_item[p][1]
+                    purchase_gap = all_purchases_for_item[p + 1][2] - all_purchases_for_item[p][2]
                     gaps_between_purchases.append(purchase_gap.total_seconds()) # Purchase timestamp
                 
                 # Core recommendation logic

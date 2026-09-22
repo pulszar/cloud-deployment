@@ -8,9 +8,6 @@ async function login() {
     username = document.getElementById("username").value;
     password = document.getElementById("password").value;
 
-    console.log(username)
-    console.log(password)
-
     const formData = new URLSearchParams();
 
     formData.append('username', username);
@@ -40,6 +37,7 @@ async function login() {
 
 // TODO: Integrate these two functions together
 async function sendToList(item) {
+    var bearer = 'Bearer ' + localStorage.getItem('access_token')
     await fetch("/notes", {
         method: "POST",
         body: JSON.stringify({message: item}),
@@ -57,7 +55,12 @@ async function sendToNotesTableUserInput() {
 }
 
 async function getGroceryList() {
-    const response = await fetch("/notes");
+    var bearer = 'Bearer ' + localStorage.getItem('access_token')
+    const response = await fetch("/notes", {
+        headers: {
+            "Authorization": bearer
+        }
+    });
     const data = await response.json();
 
     // Delete all rows first for refreshing purposes
@@ -95,8 +98,12 @@ async function getGroceryList() {
 }
 
 async function deleteListId(id) {
+    var bearer = 'Bearer ' + localStorage.getItem('access_token')
     await fetch(`/grocerylist/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+            "Authorization": bearer
+        }
     });
     getGroceryList();
 }
@@ -108,11 +115,13 @@ async function purchaseListId(itemName, itemId) {
         "date_purchased": date_purchased
     };
 
+    var bearer = 'Bearer ' + localStorage.getItem('access_token')
     await fetch("/purchase", {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
-            "Content-type": "application/json; charset=UTF-8"
+            "Content-type": "application/json; charset=UTF-8",
+            "Authorization": bearer
         }
     });
 
@@ -120,7 +129,12 @@ async function purchaseListId(itemName, itemId) {
 }
 
 async function getRecommendations() {
-    const response = await fetch("/recommendations");
+    var bearer = 'Bearer ' + localStorage.getItem('access_token')
+    const response = await fetch("/recommendations", {
+        headers: {
+            "Authorization": bearer
+        }
+    });
     const data = await response.json();
 
     console.log(data);
