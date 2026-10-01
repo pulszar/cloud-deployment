@@ -315,7 +315,7 @@ def get_recommendations(current_user: Annotated[User, Depends(get_current_active
                     
                     attributes["average_quantity"] = average_quantity
                     attributes["recommendation"] = current_item_name
-                    attributes["last_purchased"] = all_purchases_for_item[p][-1]
+                    attributes["last_purchased"] = all_purchases_for_item[p][2]
                     attributes["average_seconds_between_purchases"] = average_seconds_between_purchases
                     recommendations.append(attributes)
                     
