@@ -111,11 +111,25 @@ async function getGroceryList() {
 
         let row = groceryListTbodyRef.insertRow()
         row.id = itemId
+
+        // ITEM COLUMN
         
         // Insert grocery item
         row.insertCell().textContent = `${itemName}`;
 
-        var col2 = row.insertCell();
+        // QUANTITY COLUMN
+
+        const quantityInput = document.createElement("input"); // Child
+        quantityInput.id = itemId;
+        quantityInput.value = 1;
+        quantityInput.classList.add("quantityInput");
+
+        let quantityCell = row.insertCell(); // Parent
+        quantityCell.appendChild(quantityInput);
+
+        // OPTIONS COLUMN
+
+        var optionsCol = row.insertCell();
 
         // Create delete button
         var deleteButton = document.createElement('button');
@@ -123,14 +137,14 @@ async function getGroceryList() {
         // Using setAttribute to set onClick because .onclick was doing the function upon button creation
         deleteButton.setAttribute("onClick", `deleteListId(${itemId})`);
 
-        col2.appendChild(deleteButton);
+        optionsCol.appendChild(deleteButton);
 
         // Create purchse button
         var purchaseButton = document.createElement('button');
         purchaseButton.textContent = "Purchase";
         purchaseButton.setAttribute("onClick", `purchaseListId(\`${itemName}\`, ${itemId});`);
 
-        col2.appendChild(purchaseButton);
+        optionsCol.appendChild(purchaseButton);
     }
 }
 
