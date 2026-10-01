@@ -74,7 +74,7 @@ async def lifespan(app: FastAPI):
             # Purchase list used to create recommendations
             cursor.execute("SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name=%s)", ('purchases',))
             if not cursor.fetchone()[0]:
-                cursor.execute("CREATE TABLE purchases ( user_id INTEGER, item TEXT NOT NULL, quantity INTEGER, date_purchased TIMESTAMP)")
+                cursor.execute("CREATE TABLE purchases ( user_id INTEGER, item TEXT NOT NULL, date_purchased TIMESTAMP, quantity INTEGER)")
         
     yield # Specify what to do on shutdown after yield
 
@@ -292,15 +292,16 @@ def get_recommendations(current_user: Annotated[User, Depends(get_current_active
                     if p + 1 >= len(all_purchases_for_item):
                         break
                     
-                    # Index 3 is the time
-                    purchase_gap = all_purchases_for_item[p + 1][3] - all_purchases_for_item[p][3]
+                    # Index 2 is the time
+                    purchase_gap = all_purchases_for_item[p + 1][2] - all_purchases_for_item[p][2]
                     gaps_between_purchases.append(purchase_gap.total_seconds()) # Purchase timestamp
                 
                 # Core recommendation logic
                 # If the time since last purchase is longer than usual, recommend the item
                 
                 current_time_utc = datetime.now(timezone.utc)
-                last_time_purchased_utc = all_purchases_for_item[p][-1].replace(tzinfo=timezone.utc)
+                print(all_purchases_for_item)
+                last_time_purchased_utc = all_purchases_for_item[p][2].replace(tzinfo=timezone.utc)
                 
                 seconds_since_last_purchase = (current_time_utc - last_time_purchased_utc).total_seconds()
                 average_seconds_between_purchases = statistics.mean(gaps_between_purchases)
