@@ -120,7 +120,7 @@ async function getGroceryList() {
         // QUANTITY COLUMN
 
         const quantityInput = document.createElement("input"); // Child
-        quantityInput.id = itemId;
+        quantityInput.id = 'quantityInputId' + itemId;
         quantityInput.value = 1;
         quantityInput.classList.add("quantityInput");
 
@@ -161,8 +161,10 @@ async function deleteListId(id) {
 
 async function purchaseListId(itemName, itemId) {
     const date_purchased = new Date().toISOString();
+    const quantity = document.getElementById(String('quantityInputId' + itemId)).value;
     const body = {
         "item": itemName,
+        "quantity": quantity,
         "date_purchased": date_purchased
     };
 
@@ -188,11 +190,7 @@ async function getRecommendations() {
     });
     const data = await response.json();
 
-    console.log(data);
-    console.log(data.length);
-
     for (let r = 0; r < data.length; r++) {
-        console.log(data[r]);
         const itemRecommendation = data[r].recommendation
 
         // Convert to local time
@@ -208,8 +206,13 @@ async function getRecommendations() {
 
         let row = recommendationListTbodyRef.insertRow()
         
-        // Insert recommendation item
+        // COLUMN: RECOMMENDATION ITEM NAME
         row.insertCell().textContent = `${itemRecommendation}`;
+
+        // COLUMN: AVERAGE QUANTITY
+        row.insertCell().textContent = `${data[r].average_quantity}`
+
+        // COLUMN: LAST TIME PURCHASED
         row.insertCell().textContent = `${dateObjLastPurchasedLocalTime.toLocaleString()}`;
 
         var d = Math.floor(secondsBetweenPurchases / (3600*24));
@@ -222,8 +225,10 @@ async function getRecommendations() {
 
         timeDisplay = dDisplay + hDisplay + mDisplay;
 
+        // COLUMN: FREQUENCY
         row.insertCell().textContent = `Every ${timeDisplay}`;
 
+        // COLUMN: OPTIONS
         var addCol = row.insertCell();
         var addButton = document.createElement("Button");
         addButton.innerHTML = "Add to List";
