@@ -74,7 +74,7 @@ async def lifespan(app: FastAPI):
             # Purchase list used to create recommendations
             cursor.execute("SELECT EXISTS(SELECT * FROM information_schema.tables WHERE table_name=%s)", ('purchases',))
             if not cursor.fetchone()[0]:
-                cursor.execute("CREATE TABLE purchases ( user_id INTEGER, item TEXT NOT NULL, date_purchased TIMESTAMP)")
+                cursor.execute("CREATE TABLE purchases ( user_id INTEGER, item TEXT NOT NULL, quantity INTEGER, date_purchased TIMESTAMP)")
         
     yield # Specify what to do on shutdown after yield
 
@@ -86,6 +86,7 @@ class Note(BaseModel): # Note schema
     
 class Purchase(BaseModel):
     item : str
+    quantity : int
     date_purchased : str
     
 # AUTH
@@ -252,10 +253,10 @@ def purchse_item(purchase : Purchase, current_user: Annotated[User, Depends(get_
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
-                           INSERT INTO purchases (item, date_purchased, user_id) 
-                           VALUES (%s, %s, %s)
+                           INSERT INTO purchases (item, quantity, date_purchased, user_id) 
+                           VALUES (%s, %s, %s, %s)
                            """, 
-                           (purchase.item, purchase.date_purchased, current_user.user_id,))
+                           (purchase.item, purchase.quantity, purchase.date_purchased, current_user.user_id,))
 
 @app.get("/purchase")
 def read_purchases(current_user: Annotated[User, Depends(get_current_active_user)]):
@@ -263,7 +264,7 @@ def read_purchases(current_user: Annotated[User, Depends(get_current_active_user
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM purchases WHERE user_id=(%s)", (current_user.user_id,))
             return cursor.fetchall()
-        
+
 @app.get("/recommendations")
 def get_recommendations(current_user: Annotated[User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
@@ -291,7 +292,8 @@ def get_recommendations(current_user: Annotated[User, Depends(get_current_active
                     if p + 1 >= len(all_purchases_for_item):
                         break
                     
-                    purchase_gap = all_purchases_for_item[p + 1][2] - all_purchases_for_item[p][2]
+                    # Index 3 is the time
+                    purchase_gap = all_purchases_for_item[p + 1][3] - all_purchases_for_item[p][3]
                     gaps_between_purchases.append(purchase_gap.total_seconds()) # Purchase timestamp
                 
                 # Core recommendation logic
@@ -304,8 +306,13 @@ def get_recommendations(current_user: Annotated[User, Depends(get_current_active
                 average_seconds_between_purchases = statistics.mean(gaps_between_purchases)
                 
                 if seconds_since_last_purchase > average_seconds_between_purchases:
+                    # Get the average quantity this item is purchases with
+                    cursor.execute("SELECT AVG(quantity) FROM purchases WHERE item=(%s)", (current_item_name,))
+                    average_quantity = round(cursor.fetchone()[0])
+                    
                     attributes = {}
                     
+                    attributes["average_quantity"] = average_quantity
                     attributes["recommendation"] = current_item_name
                     attributes["last_purchased"] = all_purchases_for_item[p][-1]
                     attributes["average_seconds_between_purchases"] = average_seconds_between_purchases
