@@ -113,6 +113,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
     network_interface_ids = [ azurerm_network_interface.nic.id ]
 
+    # Create an identity for the VM
+    identity {
+        type = "SystemAssigned"
+    }
+
     # Choose image
     source_image_reference {
         publisher = "Canonical"
@@ -123,4 +128,14 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
     # Cloud-init
     user_data = base64encode(file("./cloud_config.yaml"))
+}
+
+# Assign "Key Vault Secrets User" to the VMs identity on the scope containing the specific Key Vault
+
+data "azurerm_subscription" "current" {}
+
+resource "azurerm_role_assignment" "example" {
+    scope = "${data.azurerm_subscription.current.id}/resourceGroups/myResourceGroup/providers/Microsoft.KeyVault/vaults/vaultTutorial"
+    role_definition_name = "Key Vault Secrets User"
+    principal_id = azurerm_linux_virtual_machine.vm.identity[0].principal_id
 }
