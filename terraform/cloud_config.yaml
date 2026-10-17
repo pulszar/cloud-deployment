@@ -10,6 +10,7 @@ packages:
   - nginx
   - docker-ce
   - docker-ce-cli
+  - python3.13-venv
 
 
 runcmd:
@@ -34,8 +35,8 @@ runcmd:
   - sudo git clone -b feature/azure-vm-secrets https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
   # - sudo git clone https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
   # - sudo docker compose -f /opt/cloud-deployment/docker-compose.yaml up
-  - sudo docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" postgres:17
-  - sudo apt install python3.13-venv
+  - sudo docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" -d postgres:17
+  # - sudo apt install python3.13-venv
   - sudo python3 -m venv /opt/cloud-deployment/.venv
   # - cd /opt/cloud-deployment
   - source /opt/cloud-deployment/.venv/bin/activate

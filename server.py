@@ -12,16 +12,17 @@ from jwt.exceptions import InvalidTokenError
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
-try:
+try: # This isn't that great bc if an error happens when connecting w/ Azure it will go to the except without much warning
     deployment_user = os.getlogin()
+    print(deployment_user)
     if deployment_user == "azureadmin": # Most likely on an Azure VM
-        key_vault_name = "kv-deploy-vault" # Create this in Azure and create the following secrets
+        key_vault_name = "kv-deploy-02" # Create this in Azure and create the following secrets
         kv_uri = f"https://{key_vault_name}.vault.azure.net"
         
         credential = DefaultAzureCredential()
         client = SecretClient(vault_url=kv_uri, credential=credential)
         
-        GROCERY_SECRET_KEY = client.get_secret("GROCERYSECRETKEY").value
+        GROCERY_SECRET_KEY = client.get_secret("SHOPPING-SECRET-KEY").value
         ADMIN_USERNAME = client.get_secret("ADMIN-USERNAME").value
         ADMIN_PASSWORD = client.get_secret("ADMIN-PASSWORD").value
         ADMIN_EMAIL = client.get_secret("ADMIN-EMAIL").value

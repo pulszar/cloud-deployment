@@ -134,8 +134,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 data "azurerm_subscription" "current" {}
 
+# TODO: Create variable for kv resource group
+
 resource "azurerm_role_assignment" "example" {
-    scope = "${data.azurerm_subscription.current.id}/resourceGroups/myResourceGroup/providers/Microsoft.KeyVault/vaults/vaultTutorial"
+    scope = "${data.azurerm_subscription.current.id}/resourceGroups/rg-kv-deploy/providers/Microsoft.KeyVault/vaults/kv-deploy-02"
     role_definition_name = "Key Vault Secrets User"
     principal_id = azurerm_linux_virtual_machine.vm.identity[0].principal_id
 }
