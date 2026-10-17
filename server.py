@@ -1,3 +1,5 @@
+import os
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import FileResponse # To serve frontend file
@@ -6,7 +8,46 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from dotenv import load_dotenv
 from jwt.exceptions import InvalidTokenError
 
-load_dotenv(override=False)
+# Secret decision logic
+from azure.keyvault.secrets import SecretClient
+from azure.identity import DefaultAzureCredential
+
+try:
+    deployment_user = os.getlogin()
+    if deployment_user == "azureadmin": # Most likely on an Azure VM
+        key_vault_name = "kv-deploy-vault" # Create this in Azure and create the following secrets
+        kv_uri = f"https://{key_vault_name}.vault.azure.net"
+        
+        credential = DefaultAzureCredential()
+        client = SecretClient(vault_url=kv_uri, credential=credential)
+        
+        GROCERY_SECRET_KEY = client.get_secret("GROCERYSECRETKEY").value
+        ADMIN_USERNAME = client.get_secret("ADMIN-USERNAME").value
+        ADMIN_PASSWORD = client.get_secret("ADMIN-PASSWORD").value
+        ADMIN_EMAIL = client.get_secret("ADMIN-EMAIL").value
+        database_uri = client.get_secret("DATABASE-URI").value
+    else: # Not on an Azure VM -> use environment variables
+        load_dotenv(override=False)
+        GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+        ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
+        ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
+        ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
+        database_uri = os.environ['DATABASE_URI']
+except: # Errors because in a Docker container (Local testing w/ Docker). So use env
+    load_dotenv(override=False)
+    GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+    ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
+    ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
+    ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
+    database_uri = os.environ['DATABASE_URI']
+    # database_uri = "postgres://postgres:password@localhost:5432/notesdb"
+    pass
+    
+# Azure VM: postgresql with Docker
+# Render: postgresql with Render
+# database_uri = os.environ['DATABASE_URI']
+# database_uri = "postgres://postgres:password@localhost:5432/notesdb"
+
 
 # AUTH
 from typing import Annotated
@@ -20,8 +61,6 @@ from datetime import datetime, timezone, timedelta
 import psycopg # Postgres database adapter
 from pydantic import BaseModel
 
-import os
-
 # 1. Non-dockerized FastAPI and non-dockerized Postgres
 # database_uri = "postgres://luke@localhost:5432/notesdb"
 
@@ -34,7 +73,7 @@ import os
 
 # 4. Fully dockerized (Docker compose)
 # Uses the URI created within the compose yaml
-database_uri = os.environ['DATABASE_URI']
+
 
 password_hash = PasswordHash.recommended()
             
@@ -49,18 +88,18 @@ async def lifespan(app: FastAPI):
                 cursor.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username TEXT NOT NULL, email TEXT NOT NULL, hashed_password TEXT NOT NULL, disabled boolean)") 
             
             def find_admin_in_db():
-                cursor.execute("SELECT username FROM users WHERE username=(%s)", (os.environ['ADMIN_USERNAME'],))
+                cursor.execute("SELECT username FROM users WHERE username=(%s)", (ADMIN_USERNAME,))
                 result = cursor.fetchone()
                 if result == None:
                     return False
                 return True
 
             def create_admin_in_db():
-                admin_hashed_password = password_hash.hash(os.environ['ADMIN_PASSWORD'])
+                admin_hashed_password = password_hash.hash(ADMIN_PASSWORD)
                 cursor.execute("""
                     INSERT INTO users (username, email, hashed_password, disabled)
                     VALUES (%s, %s, %s, %s);
-                    """, (os.environ['ADMIN_USERNAME'], os.environ['ADMIN_EMAIL'], admin_hashed_password, False)
+                    """, (ADMIN_USERNAME, ADMIN_EMAIL, admin_hashed_password, False)
                     )
 
             if not find_admin_in_db():
@@ -117,7 +156,7 @@ DUMMY_HASH = password_hash.hash('dummypassword')
 
 TOKEN_EXPIRE_INTERVAL_MINUTES = 30
 
-SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+SECRET_KEY = GROCERY_SECRET_KEY
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

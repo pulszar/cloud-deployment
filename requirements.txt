@@ -5,3 +5,5 @@ pwdlib[argon2]
 python-multipart
 pyjwt
 python-dotenv
+azure-identity
+azure-keyvault-secrets
