@@ -38,8 +38,8 @@ runcmd:
   - sudo docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" -d postgres:17
   # - sudo apt install python3.13-venv
   - sudo python3 -m venv /opt/cloud-deployment/.venv
-  # - cd /opt/cloud-deployment
   - source /opt/cloud-deployment/.venv/bin/activate
   - sudo /opt/cloud-deployment/.venv/bin/pip install -r /opt/cloud-deployment/requirements.txt
+  - cd /opt/cloud-deployment
   - uvicorn server:app --port 8000 --app-dir /opt/cloud-deployment/
   - sudo git config --global --add safe.directory /opt/cloud-deployment

@@ -12,6 +12,7 @@ from jwt.exceptions import InvalidTokenError
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 
+frontend_path = "frontend"
 try: # This isn't that great bc if an error happens when connecting w/ Azure it will go to the except without much warning
     deployment_user = os.getlogin()
     print(deployment_user)
@@ -27,6 +28,8 @@ try: # This isn't that great bc if an error happens when connecting w/ Azure it 
         ADMIN_PASSWORD = client.get_secret("ADMIN-PASSWORD").value
         ADMIN_EMAIL = client.get_secret("ADMIN-EMAIL").value
         database_uri = client.get_secret("DATABASE-URI").value
+        
+        frontend_path = "/opt/cloud-deployment/frontend"
     else: # Not on an Azure VM -> use environment variables
         load_dotenv(override=False)
         GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
@@ -119,7 +122,7 @@ async def lifespan(app: FastAPI):
     yield # Specify what to do on shutdown after yield
 
 app = FastAPI(lifespan=lifespan)
-app.frontend("/", directory="./frontend")
+app.frontend("/", directory=frontend_path)
 
 class Note(BaseModel): # Note schema
     message : str
