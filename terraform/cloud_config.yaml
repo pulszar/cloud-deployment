@@ -10,7 +10,7 @@ packages:
   - nginx
   - docker-ce
   - docker-ce-cli
-  - python3.13-venv
+  - npm
 
 
 runcmd:
@@ -33,13 +33,20 @@ runcmd:
     }" > /etc/nginx/nginx.conf
   - sudo nginx -s reload
   - sudo git clone -b feature/azure-vm-secrets https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
+  # - sudo mv /opt/cloud-deployment/terraform/azure_secrets.py .
+  # - sudo python3 -m venv .venv
+  # - sudo .venv/bin/pip install -r /opt/cloud-deployment/terraform/requirements.txt
+  - sudo touch /opt/cloud-deployment/.env
+  - sudo chmod 777 /opt/cloud-deployment/.env
+  - cd /opt/cloud-deployment/terraform
+  - npm init -y
+  - npm install @azure/keyvault-secrets
+  - npm install @azure/identity
+  - node index.js > ../.env
+  # - source .venv/bin/activate && python3 azure_secrets.py
   # - sudo git clone https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
-  # - sudo docker compose -f /opt/cloud-deployment/docker-compose.yaml up
-  - sudo docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" -d postgres:17
-  # - sudo apt install python3.13-venv
-  - sudo python3 -m venv /opt/cloud-deployment/.venv
-  - source /opt/cloud-deployment/.venv/bin/activate
-  - sudo /opt/cloud-deployment/.venv/bin/pip install -r /opt/cloud-deployment/requirements.txt
-  - cd /opt/cloud-deployment
-  - uvicorn server:app --port 8000 --app-dir /opt/cloud-deployment/
+  - sudo docker compose -f /opt/cloud-deployment/docker-compose.yaml up
+  # - sudo docker run --name deployment-postgres -p 5432:5432 -e "POSTGRES_PASSWORD=password" -e "POSTGRES_DB=notesdb" -d postgres:17
+  # - source /opt/cloud-deployment/.venv/bin/activate
+  # - uvicorn server:app --port 8000 --app-dir /opt/cloud-deployment/
   - sudo git config --global --add safe.directory /opt/cloud-deployment

@@ -5,5 +5,7 @@ pwdlib[argon2]
 python-multipart
 pyjwt
 python-dotenv
+
+# Cloud init packages
 azure-identity
 azure-keyvault-secrets

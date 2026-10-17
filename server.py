@@ -9,49 +9,50 @@ from dotenv import load_dotenv
 from jwt.exceptions import InvalidTokenError
 
 # Secret decision logic
-from azure.keyvault.secrets import SecretClient
-from azure.identity import DefaultAzureCredential
+# from azure.keyvault.secrets import SecretClient
+# from azure.identity import DefaultAzureCredential
 
 frontend_path = "frontend"
-try: # This isn't that great bc if an error happens when connecting w/ Azure it will go to the except without much warning
-    deployment_user = os.getlogin()
-    print(deployment_user)
-    if deployment_user == "azureadmin": # Most likely on an Azure VM
-        key_vault_name = "kv-deploy-02" # Create this in Azure and create the following secrets
-        kv_uri = f"https://{key_vault_name}.vault.azure.net"
+# try: # This isn't that great bc if an error happens when connecting w/ Azure it will go to the except without much warning
+#     deployment_user = os.getlogin()
+#     print(deployment_user)
+#     if deployment_user == "azureadmin": # Most likely on an Azure VM
+#         key_vault_name = "kv-deploy-02" # Create this in Azure and create the following secrets
+#         kv_uri = f"https://{key_vault_name}.vault.azure.net"
         
-        credential = DefaultAzureCredential()
-        client = SecretClient(vault_url=kv_uri, credential=credential)
+#         credential = DefaultAzureCredential()
+#         client = SecretClient(vault_url=kv_uri, credential=credential)
         
-        GROCERY_SECRET_KEY = client.get_secret("SHOPPING-SECRET-KEY").value
-        ADMIN_USERNAME = client.get_secret("ADMIN-USERNAME").value
-        ADMIN_PASSWORD = client.get_secret("ADMIN-PASSWORD").value
-        ADMIN_EMAIL = client.get_secret("ADMIN-EMAIL").value
-        database_uri = client.get_secret("DATABASE-URI").value
+#         GROCERY_SECRET_KEY = client.get_secret("SHOPPING-SECRET-KEY").value
+#         ADMIN_USERNAME = client.get_secret("ADMIN-USERNAME").value
+#         ADMIN_PASSWORD = client.get_secret("ADMIN-PASSWORD").value
+#         ADMIN_EMAIL = client.get_secret("ADMIN-EMAIL").value
+#         database_uri = client.get_secret("DATABASE-URI").value
         
-        frontend_path = "/opt/cloud-deployment/frontend"
-    else: # Not on an Azure VM -> use environment variables
-        load_dotenv(override=False)
-        GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
-        ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
-        ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
-        ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
-        database_uri = os.environ['DATABASE_URI']
-except: # Errors because in a Docker container (Local testing w/ Docker). So use env
-    load_dotenv(override=False)
-    GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
-    ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
-    ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
-    ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
-    database_uri = os.environ['DATABASE_URI']
-    # database_uri = "postgres://postgres:password@localhost:5432/notesdb"
-    pass
+#         frontend_path = "/opt/cloud-deployment/frontend"
+#     else: # Not on an Azure VM -> use environment variables
+#         load_dotenv(override=False)
+#         GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+#         ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
+#         ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
+#         ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
+#         database_uri = os.environ['DATABASE_URI']
+# except: # Errors because in a Docker container (Local testing w/ Docker). So use env
+#     # database_uri = "postgres://postgres:password@localhost:5432/notesdb"
+#     pass
     
 # Azure VM: postgresql with Docker
 # Render: postgresql with Render
 # database_uri = os.environ['DATABASE_URI']
 # database_uri = "postgres://postgres:password@localhost:5432/notesdb"
 
+load_dotenv(override=False)
+GROCERY_SECRET_KEY = os.environ['GROCERY_SECRET_KEY']
+ADMIN_USERNAME = os.environ['ADMIN_USERNAME']
+ADMIN_PASSWORD = os.environ['ADMIN_PASSWORD']
+ADMIN_EMAIL = os.environ['ADMIN_EMAIL']
+# Exported by docker compose when initialized
+database_uri = os.environ['DATABASE_URI']
 
 # AUTH
 from typing import Annotated
