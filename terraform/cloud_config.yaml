@@ -42,7 +42,7 @@ runcmd:
   - npm init -y
   - npm install @azure/keyvault-secrets
   - npm install @azure/identity
-  - node index.js > ../.env
+  - node azure_secrets.js > ../.env
   # - source .venv/bin/activate && python3 azure_secrets.py
   # - sudo git clone https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
   - sudo docker compose -f /opt/cloud-deployment/docker-compose.yaml up
