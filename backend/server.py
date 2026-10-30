@@ -1,4 +1,5 @@
 import os
+import schemas
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
@@ -64,7 +65,6 @@ from datetime import datetime, timezone, timedelta
 
 
 import psycopg # Postgres database adapter
-from pydantic import BaseModel
 
 # 1. Non-dockerized FastAPI and non-dockerized Postgres
 # database_uri = "postgres://luke@localhost:5432/notesdb"
@@ -128,39 +128,7 @@ app.frontend("/", directory=frontend_path)
 @app.get('/sign_in')
 async def sign_in():
     return FileResponse('frontend/sign_in.html')
-    
 
-class Note(BaseModel): # Note schema
-    message : str
-    
-class Purchase(BaseModel):
-    item : str
-    quantity : int
-    date_purchased : str
-    
-# AUTH
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    
-class User(BaseModel):
-    user_id: int
-    username: str
-    email: str
-    disabled: bool | None = None
-    
-class UserInDB(User):
-    hashed_password: str
-    
-class TokenData(BaseModel):
-    username : str
-    id : int
-    
-class CreateUser(BaseModel):
-    username: str
-    email: str
-    password: str
 
 DUMMY_HASH = password_hash.hash('dummypassword')
 
@@ -171,7 +139,7 @@ ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_scheme)]) -> User:
+def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_scheme)]) -> schemas.User:
     credentials_exception = HTTPException (
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid credentials",
@@ -183,7 +151,7 @@ def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_schem
         if username is None:
             raise credentials_exception
         user_id = decoded_token.get("id")
-        token_data = TokenData(username=username, id=user_id)
+        token_data = schemas.TokenData(username=username, id=user_id)
     except InvalidTokenError:
         raise credentials_exception
     user = get_user(token_data.username)
@@ -191,7 +159,7 @@ def get_current_user(token: Annotated[OAuth2PasswordBearer, Depends(oauth2_schem
         raise credentials_exception
     return user
 
-def get_current_active_user(current_active_user: Annotated[User, Depends(get_current_user)]) -> User:
+def get_current_active_user(current_active_user: Annotated[schemas.User, Depends(get_current_user)]) -> schemas.User:
     if current_active_user.disabled:
         raise HTTPException (
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -200,7 +168,7 @@ def get_current_active_user(current_active_user: Annotated[User, Depends(get_cur
     return current_active_user
     
 
-def get_user(username : str) -> UserInDB:
+def get_user(username : str) -> schemas.UserInDB:
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM users WHERE username=(%s)", (username,))
@@ -208,7 +176,7 @@ def get_user(username : str) -> UserInDB:
             user_result = cursor.fetchone()
             
             if user_result:
-                return UserInDB(
+                return schemas.UserInDB(
                     user_id=int(user_result[0]),
                     username=user_result[1],
                     email=user_result[2],
@@ -238,7 +206,7 @@ def get_access_token(data: dict, token_expire_interval: timedelta):
     return token
 
 @app.post('/token')
-async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> schemas.Token:
     user = authenticate_user(login_form.username, login_form.password)
     if not user:
         raise HTTPException (
@@ -251,10 +219,10 @@ async def login(login_form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> 
                 data={ "sub": user.username, "id": user.user_id }, 
                 token_expire_interval=token_expire_interval
             )
-    return Token(access_token=token, token_type="bearer")
+    return schemas.Token(access_token=token, token_type="bearer")
 
 @app.post('/create_user')
-async def create_user(body : CreateUser):
+async def create_user(body : schemas.CreateUser):
     hashed_password = password_hash.hash(body.password)
     # Insert into database
     if not get_user(body.username):
@@ -270,7 +238,7 @@ async def create_user(body : CreateUser):
         
   
 @app.get('/users/me')  
-def get_current_user_api(current_user: Annotated[User, Depends(get_current_active_user)]) -> User:
+def get_current_user_api(current_user: Annotated[schemas.User, Depends(get_current_active_user)]) -> schemas.User:
     return current_user
 
 @app.get('/login_page')
@@ -279,26 +247,26 @@ async def login_page():
 
 
 @app.post("/notes")
-def send_note(current_user: Annotated[User, Depends(get_current_active_user)], note : Note):
+def send_note(current_user: Annotated[schemas.User, Depends(get_current_active_user)], note : schemas.Note):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("INSERT INTO notes (note, user_id) VALUES (%s, %s) RETURNING id", (note.message, current_user.user_id))
         
 @app.get("/notes")
-def get_notes(current_user: Annotated[User, Depends(get_current_active_user)]):
+def get_notes(current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT id, note FROM notes WHERE user_id=(%s)", (current_user.user_id,))
             return cursor.fetchall()
         
 @app.delete("/grocerylist/{id}")
-def delete_grocery_list_item(id : int, current_user: Annotated[User, Depends(get_current_active_user)]):
+def delete_grocery_list_item(id : int, current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM notes WHERE id=(%s) AND user_id=(%s)", (id, current_user.user_id))
             
 @app.post("/purchase")
-def purchse_item(purchase : Purchase, current_user: Annotated[User, Depends(get_current_active_user)]):
+def purchse_item(purchase : schemas.Purchase, current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -308,14 +276,14 @@ def purchse_item(purchase : Purchase, current_user: Annotated[User, Depends(get_
                            (purchase.item, purchase.quantity, purchase.date_purchased, current_user.user_id,))
 
 @app.get("/purchase")
-def read_purchases(current_user: Annotated[User, Depends(get_current_active_user)]):
+def read_purchases(current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM purchases WHERE user_id=(%s)", (current_user.user_id,))
             return cursor.fetchall()
 
 @app.get("/recommendations")
-def get_recommendations(current_user: Annotated[User, Depends(get_current_active_user)]):
+def get_recommendations(current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
     with psycopg.connect(database_uri) as connection:
         with connection.cursor() as cursor:
             # Get all unique purchases
