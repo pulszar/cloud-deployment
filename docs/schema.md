@@ -1,3 +1,4 @@
+***OUTDATED***
 ```mermaid
 ---
 title: Main List and Purchased Items Relationship

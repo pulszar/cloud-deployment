@@ -1,3 +1,4 @@
+***OUTDATED***
 # Smart Grocery App
 
 Tentative README for transitioning the backend side of this repo into a grocery app.
