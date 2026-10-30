@@ -32,7 +32,7 @@ runcmd:
             \t}\n
     }" > /etc/nginx/nginx.conf
   - sudo nginx -s reload
-  - sudo git clone -b feature/azure-vm-secrets https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
+  - sudo git clone https://github.com/pulszar/cloud-deployment.git /opt/cloud-deployment
   # - sudo mv /opt/cloud-deployment/terraform/azure_secrets.py .
   # - sudo python3 -m venv .venv
   # - sudo .venv/bin/pip install -r /opt/cloud-deployment/terraform/requirements.txt
