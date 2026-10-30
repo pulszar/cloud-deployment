@@ -125,6 +125,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.frontend("/", directory=frontend_path)
 
+@app.get('/sign_in')
+async def sign_in():
+    return FileResponse('frontend/sign_in.html')
+    
+
 class Note(BaseModel): # Note schema
     message : str
     
